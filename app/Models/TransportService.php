@@ -1,0 +1,60 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class TransportService extends Model
+{
+    use SoftDeletes;
+
+    protected $table = 'transport_services';
+    protected $guarded = [];
+
+    protected $fillable = [
+        'source_id',
+        'type',
+        'vehicle_no',
+        'chauffer_phone',
+        'employee_id',
+        'chauffer_name',
+        'assigned_start_at',
+        'assigned_end_at',
+        'pickup_location',
+        'dropoff_location',
+        'passenger_count',
+        'delete_note',
+        'deleted_by',
+        'vehicle_type',
+        'is_vehicle_assigned',
+    ];
+
+    protected $casts = [
+        'assigned_start_at' => 'datetime',
+        'assigned_end_at' => 'datetime',
+        'passenger_count' => 'integer',
+        'is_vehicle_assigned' => 'boolean',
+    ];
+
+    public function vehicle(): BelongsTo
+    {
+        return $this->belongsTo(Vehicle::class);
+    }
+
+    public function chauffer(): BelongsTo
+    {
+        return $this->belongsTo(Chauffer::class);
+    }
+
+    public function tripDetails()
+    {
+        return $this->hasMany(TripDetail::class, 'transport_service_id');
+    }
+
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class, 'employee_id', 'employee_id');
+    }
+}
