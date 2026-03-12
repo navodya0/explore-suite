@@ -111,7 +111,7 @@ class EmployeeController extends Controller
                 'employment_type' => ['required', 'string', 'max:20'],
                 'employment_level' => ['required', 'string', 'max:20'],
                 'date_of_joining' => ['required', 'date'],
-                'probation_end_date' => ['nullable', 'date', 'after_or_equal:date_of_joining'],
+                'probation_end_date' => ['nullable', 'date'],
                 'reporting_manager_id' => ['nullable', 'integer', 'exists:employees,employee_id'],
 
                 'contacts' => ['required', 'array', 'min:1'],
@@ -444,7 +444,7 @@ class EmployeeController extends Controller
             'employment_type' => ['required','string','max:20'],
             'employment_level' => ['required','string','max:20'],
             'date_of_joining' => ['required','date'],
-            'probation_end_date' => ['nullable','date','after_or_equal:date_of_joining'],
+            'probation_end_date' => ['nullable','date'],
             'reporting_manager_id' => ['nullable','integer','exists:employees,employee_id'],
             'contacts' => ['required','array','min:1'],
             'contacts.*.contact_type' => ['required','string','max:30'],

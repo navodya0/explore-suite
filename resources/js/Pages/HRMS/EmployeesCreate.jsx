@@ -746,7 +746,7 @@ export default function EmployeesCreate({
                 value={data.probation_end_date}
                 onChange={(e) => setData("probation_end_date", e.target.value)}
                 onBlur={() => markTouched("probation_end_date")}
-                inputProps={{ min: new Date().toISOString().split("T")[0] }}
+                // inputProps={{ min: new Date().toISOString().split("T")[0] }}
                 fullWidth
                 {...tf("probation_end_date")}
               />
