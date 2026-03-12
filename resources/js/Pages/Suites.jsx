@@ -236,11 +236,18 @@ const authorizedKeys = useMemo(() => {
   if (role === "admin") return new Set(allSuites.map((s) => s.key));
 
   // senior management = admin
-  if (normalize(deptRaw) === "senior management")
+  if (normalize(deptRaw) === "senior management") {
     return new Set(allSuites.map((s) => s.key));
+  }
 
-  // department-based: allow only suites for that department name
-  // IMPORTANT: match the department key in SUITE_SETS by normalizing
+  const allowed = new Set();
+
+  // role-based access
+  if (role === "hr-executive") {
+    allowed.add("hr");
+  }
+
+  // department-based access
   const deptName = normalize(
     page.props?.auth?.department ??
       page.props?.auth?.user?.department ??
@@ -249,14 +256,17 @@ const authorizedKeys = useMemo(() => {
       ""
   );
 
-  // find matching SUITE_SETS key
   const matchedKey = Object.keys(SUITE_SETS).find(
     (k) => normalize(k) === deptName
   );
 
-  const allowed = matchedKey ? SUITE_SETS[matchedKey] : [];
-  return new Set(allowed.map((s) => s.key));
-}, [role, allSuites, page.props, auth]);
+  if (matchedKey) {
+    SUITE_SETS[matchedKey].forEach((s) => allowed.add(s.key));
+  }
+
+  return allowed;
+}, [role, allSuites, deptRaw, page.props, auth]);
+
   // show ALL suites, but disable unauthorized ones
   const suites = useMemo(() => allSuites, [allSuites]);
 

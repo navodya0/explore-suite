@@ -35,12 +35,19 @@ class UserController extends Controller
         ]);
 
         $validated['password'] = bcrypt($validated['password']);
-        
-        $role_id = $validated['role_id'];
+
+        $role_id = $validated['role_id'] ?? null;
         unset($validated['role_id']);
 
+        if ($role_id) {
+            $role = Role::find($role_id);
+            $validated['role'] = $role->name;
+        } else {
+            $validated['role'] = null;
+        }
+
         $user = User::create($validated);
-        
+
         if ($role_id) {
             $user->roles()->attach($role_id);
         }
@@ -69,12 +76,19 @@ class UserController extends Controller
         } else {
             unset($validated['password']);
         }
-        
-        $role_id = $validated['role_id'];
+
+        $role_id = $validated['role_id'] ?? null;
         unset($validated['role_id']);
 
+        if ($role_id) {
+            $role = Role::find($role_id);
+            $validated['role'] = $role->name;
+        } else {
+            $validated['role'] = null;
+        }
+
         $user->update($validated);
-        
+
         if ($role_id) {
             $user->roles()->sync([$role_id]);
         } else {

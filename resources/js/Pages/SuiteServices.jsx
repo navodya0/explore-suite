@@ -146,33 +146,43 @@ export default function HRMS({ auth }) {
     return all.filter((m, i, arr) => arr.findIndex((x) => x.href === m.href) === i);
   }, []);
 
-  const modules = useMemo(() => {
-    if (role === "admin") {
-      const adminModules = [
-        ...allModules,
-        ...(MODULE_SETS.ADMIN || []),
-        ...(MODULE_SETS.TRANSPORT || []),
-      ];
-      return adminModules.filter(
-        (m, i, arr) => arr.findIndex((x) => x.href === m.href) === i
-      );
-    }
+const modules = useMemo(() => {
+  if (role === "admin") {
+    const adminModules = [
+      ...allModules,
+      ...(MODULE_SETS.ADMIN || []),
+      ...(MODULE_SETS.TRANSPORT || []),
+    ];
 
-    if (dept === "hr" || dept.includes("human"))
-      return MODULE_SETS.HR || [];
+    return adminModules.filter(
+      (m, i, arr) => arr.findIndex((x) => x.href === m.href) === i
+    );
+  }
 
-    if (dept === "finance" || dept.includes("finan"))
-      return MODULE_SETS.FINANCE || [];
+  // role-based access
+  if (role === "hr-executive") {
+    return MODULE_SETS.HR || [];
+  }
 
-    if (
-      dept.includes("transfer") ||
-      dept.includes("rent a car") ||
-      dept.includes("rental")
-    )
-      return MODULE_SETS.TRANSPORT || [];
+  // department-based access
+  if (dept === "hr" || dept.includes("human")) {
+    return MODULE_SETS.HR || [];
+  }
 
-    return [];
-  }, [role, dept, allModules]);
+  if (dept === "finance" || dept.includes("finan")) {
+    return MODULE_SETS.FINANCE || [];
+  }
+
+  if (
+    dept.includes("transfer") ||
+    dept.includes("rent a car") ||
+    dept.includes("rental")
+  ) {
+    return MODULE_SETS.TRANSPORT || [];
+  }
+
+  return [];
+}, [role, dept, allModules]);
 
 
   return (
