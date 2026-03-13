@@ -489,7 +489,6 @@ class EmployeeController extends Controller
             'employee_documents.*.files' => ['nullable','array'],
             'employee_documents.*.files.*' => ['file','max:10240'],
         ]);
-        
         DB::transaction(function () use ($employee, $validated) {
             $employee->update([
                 'employment_status' => $validated['employment_status'],
