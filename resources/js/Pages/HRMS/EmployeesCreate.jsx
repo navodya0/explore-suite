@@ -29,8 +29,8 @@ const EMPLOYMENT_STATUS = ["Active", "Inactive", "Resigned", "Terminated"];
 const GENDERS = ["Male", "Female"];
 const MARITAL_STATUS = ["Single", "Married", "Other"];
 const ATTENDANCE_TYPE = ["Fingerprint", "Biometric", "Manual"];
-const EMPLOYMENT_TYPE = ["Full-Time", "Contract"];
-const EMPLOYMENT_LEVEL = ["Probation", "Confirmed"];
+const EMPLOYMENT_TYPE = ["Full-Time", "Part-Time"];
+const EMPLOYMENT_LEVEL = ["Casual", "Probation", "Fixed- Contract" , "Permanent"];
 const ADDRESS_TYPE = ["Residential", "Emergency", "Other"];
 const CONTACT_TYPE = [
   "Personal Email",

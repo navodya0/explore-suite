@@ -146,44 +146,44 @@ export default function HRMS({ auth }) {
     return all.filter((m, i, arr) => arr.findIndex((x) => x.href === m.href) === i);
   }, []);
 
-const modules = useMemo(() => {
-  if (role === "admin") {
-    const adminModules = [
-      ...allModules,
-      ...(MODULE_SETS.ADMIN || []),
-      ...(MODULE_SETS.TRANSPORT || []),
-    ];
+  const modules = useMemo(() => {
+    // admin gets everything
+    if (role === "admin") {
+      const adminModules = [
+        ...allModules,
+        ...(MODULE_SETS.ADMIN || []),
+        ...(MODULE_SETS.TRANSPORT || []),
+      ];
 
-    return adminModules.filter(
-      (m, i, arr) => arr.findIndex((x) => x.href === m.href) === i
-    );
-  }
+      return adminModules.filter(
+        (m, i, arr) => arr.findIndex((x) => x.href === m.href) === i
+      );
+    }
 
-  // role-based access
-  if (role === "hr-executive") {
-    return MODULE_SETS.HR || [];
-  }
+    // hr-executive should ONLY see HR modules
+    if (role === "hr-executive") {
+      return MODULE_SETS.HR || [];
+    }
 
-  // department-based access
-  if (dept === "hr" || dept.includes("human")) {
-    return MODULE_SETS.HR || [];
-  }
+    // other users: department-based access
+    if (dept === "hr" || dept.includes("human")) {
+      return MODULE_SETS.HR || [];
+    }
 
-  if (dept === "finance" || dept.includes("finan")) {
-    return MODULE_SETS.FINANCE || [];
-  }
+    if (dept === "finance" || dept.includes("finan")) {
+      return MODULE_SETS.FINANCE || [];
+    }
 
-  if (
-    dept.includes("transfer") ||
-    dept.includes("rent a car") ||
-    dept.includes("rental")
-  ) {
-    return MODULE_SETS.TRANSPORT || [];
-  }
+    if (
+      dept.includes("transfer") ||
+      dept.includes("rent a car") ||
+      dept.includes("rental")
+    ) {
+      return MODULE_SETS.TRANSPORT || [];
+    }
 
-  return [];
-}, [role, dept, allModules]);
-
+    return [];
+  }, [role, dept, allModules]);
 
   return (
     <AuthenticatedLayout user={auth.user}>
