@@ -182,6 +182,7 @@ const jobTitleName =
                   { k: "Job Title", v: jobTitleName },
                   { k: "Employment Type", v: job?.employment_type },
                   { k: "Employment Level", v: job?.employment_level },
+                  { k: "Company Type", v: job?.company_type },
                   { k: "Date of Joining", v: onlyDate(job?.date_of_joining) },
                   { k: "Probation End", v: onlyDate(job?.probation_end_date) },
                   { k: "Reporting Manager", v: managerName(job) },

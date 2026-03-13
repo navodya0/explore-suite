@@ -31,6 +31,7 @@ const MARITAL_STATUS = ["Single", "Married", "Other"];
 const ATTENDANCE_TYPE = ["Fingerprint", "Biometric", "Manual"];
 const EMPLOYMENT_TYPE = ["Full-Time", "Part-Time"];
 const EMPLOYMENT_LEVEL = ["Casual", "Probation", "Fixed- Contract" , "Permanent"];
+const COMPANY_TYPE = ["Explore Vacations (Pvt) Ltd", "SR Rent a Car (Pvt) Ltd", "Elite Rent a Car (Pvt) Ltd"];
 const ADDRESS_TYPE = ["Residential", "Emergency", "Other"];
 const CONTACT_TYPE = [
   "Personal Email",
@@ -98,6 +99,7 @@ export default function EmployeesCreate({
     job_title_id: "",
     employment_type: "Full-Time",
     employment_level: "Probation",
+    company_type: "Explore Vacations (Pvt) Ltd",
     date_of_joining: "",
     probation_end_date: "",
     reporting_manager_id: "",
@@ -184,6 +186,7 @@ export default function EmployeesCreate({
       job_title_id: !isEmpty(data.job_title_id),
       employment_type: !isEmpty(data.employment_type),
       employment_level: !isEmpty(data.employment_level),
+      company_type: !isEmpty(data.company_type),
       date_of_joining: !isEmpty(data.date_of_joining),
 
       // CONTACTS (since you seed them, we require their values)
@@ -719,6 +722,21 @@ export default function EmployeesCreate({
                 {...req("employment_level")}
               >
                 {EMPLOYMENT_LEVEL.map((x) => (
+                  <MenuItem key={x} value={x}>
+                    {x}
+                  </MenuItem>
+                ))}
+              </TextField>
+
+              <TextField
+                select
+                label="Company Type"
+                value={data.company_type}
+                onChange={(e) => setData("company_type", e.target.value)}
+                fullWidth
+                {...req("company_type")}
+              >
+                {COMPANY_TYPE.map((x) => (
                   <MenuItem key={x} value={x}>
                     {x}
                   </MenuItem>

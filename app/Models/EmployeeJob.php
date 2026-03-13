@@ -16,7 +16,7 @@ class EmployeeJob extends Model
         'employee_id','department_id','job_title_id',
         'employment_type','employment_level',
         'date_of_joining','probation_end_date',
-        'reporting_manager_id'
+        'reporting_manager_id','company_type'
     ];
 
     protected $casts = [

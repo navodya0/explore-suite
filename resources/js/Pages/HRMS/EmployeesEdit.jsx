@@ -20,8 +20,9 @@ const EMPLOYMENT_STATUS = ["Active", "Inactive", "Resigned", "Terminated"];
 const GENDERS = ["Male", "Female"];
 const MARITAL_STATUS = ["Single", "Married", "Other"];
 const ATTENDANCE_TYPE = ["Fingerprint", "Biometric", "Manual"];
-const EMPLOYMENT_TYPE = ["Full-Time", "Contract"];
-const EMPLOYMENT_LEVEL = ["Probation", "Confirmed"];
+const EMPLOYMENT_TYPE = ["Full-Time", "Part-Time"];
+const EMPLOYMENT_LEVEL = ["Casual", "Probation", "Fixed- Contract" , "Permanent"];
+const COMPANY_TYPE = ["Explore Vacations (Pvt) Ltd", "SR Rent a Car (Pvt) Ltd", "Elite Rent a Car (Pvt) Ltd"];
 const ADDRESS_TYPE = ["Residential", "Emergency", "Other"];
 const CONTACT_TYPE = ["Personal Email", "Work Email", "Whatsapp Number", "Alternate Phone"];
 const PAY_FREQUENCY = ["Monthly", "Weekly"];
@@ -140,6 +141,7 @@ export default function EmployeesEdit({
     job_title_id: job?.job_title_id ?? "",
     employment_type: job?.employment_type ?? "Full-Time",
     employment_level: job?.employment_level ?? "Probation",
+    company_type: job?.company_type ?? "",
     date_of_joining: asDate(job?.date_of_joining),
     probation_end_date: asDate(job?.probation_end_date),
     reporting_manager_id: job?.reporting_manager_id ?? "",
@@ -367,6 +369,10 @@ export default function EmployeesEdit({
 
               <TextField select label="Employment Level" value={data.employment_level} onChange={(e) => setData("employment_level", e.target.value)} fullWidth>
                 {EMPLOYMENT_LEVEL.map((x) => <MenuItem key={x} value={x}>{x}</MenuItem>)}
+              </TextField>
+
+              <TextField select label="Company Type" value={data.company_type} onChange={(e) => setData("company_type", e.target.value)} fullWidth>
+                {COMPANY_TYPE.map((x) => <MenuItem key={x} value={x}>{x}</MenuItem>)}
               </TextField>
             </Stack>
 
