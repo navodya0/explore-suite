@@ -98,7 +98,7 @@ export default function EmployeesCreate({
     department_id: "",
     job_title_id: "",
     employment_type: "Full-Time",
-    employment_level: "Probation",
+    employment_level: "Permanent",
     company_type: "Explore Vacations (Pvt) Ltd",
     date_of_joining: "",
     probation_end_date: "",
@@ -757,17 +757,18 @@ export default function EmployeesCreate({
                 {...tf("date_of_joining")}
               />
 
-              <TextField
-                label="Probation End Date"
-                type="date"
-                InputLabelProps={{ shrink: true }}
-                value={data.probation_end_date}
-                onChange={(e) => setData("probation_end_date", e.target.value)}
-                onBlur={() => markTouched("probation_end_date")}
-                // inputProps={{ min: new Date().toISOString().split("T")[0] }}
-                fullWidth
-                {...tf("probation_end_date")}
-              />
+              {data.employment_level === "Probation" && (
+                <TextField
+                  label="Probation End Date"
+                  type="date"
+                  InputLabelProps={{ shrink: true }}
+                  value={data.probation_end_date}
+                  onChange={(e) => setData("probation_end_date", e.target.value)}
+                  onBlur={() => markTouched("probation_end_date")}
+                  fullWidth
+                  {...tf("probation_end_date")}
+                />
+              )}
 
               <TextField
                 select
