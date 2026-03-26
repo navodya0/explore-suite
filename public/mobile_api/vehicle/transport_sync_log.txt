@@ -1,0 +1,44 @@
+[2026-03-26 09:44:16] Incoming request
+Array
+(
+    [raw] => {"contact_no":"asd","employee_id":"10","manager_id":"9","vehicle_no":"CAE-4853","from_date":"2026-03-26","to_date":"2026-03-31","destination":"Trincomalee, Sri Lanka","chauffer_phone":"asd","chauffer_name":"asd sad","reason":"Office Service","vehicle_type":"Car"}
+    [decoded] => Array
+        (
+            [contact_no] => asd
+            [employee_id] => 10
+            [manager_id] => 9
+            [vehicle_no] => CAE-4853
+            [from_date] => 2026-03-26
+            [to_date] => 2026-03-31
+            [destination] => Trincomalee, Sri Lanka
+            [chauffer_phone] => asd
+            [chauffer_name] => asd sad
+            [reason] => Office Service
+            [vehicle_type] => Car
+        )
+
+)
+
+------------------------------------------------------------
+[2026-03-26 09:44:16] Transport created
+Array
+(
+    [transport_id] => 32
+)
+
+------------------------------------------------------------
+[2026-03-26 09:44:16] Rental sync skipped
+Array
+(
+    [reason] => vehicle_id <= 0
+)
+
+------------------------------------------------------------
+[2026-03-26 09:44:16] Final success
+Array
+(
+    [transport_id] => 32
+    [rental] => 
+)
+
+------------------------------------------------------------
