@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Feb 21, 2026 at 04:10 PM
+-- Generation Time: Mar 26, 2026 at 12:34 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -20,6 +20,36 @@ SET time_zone = "+00:00";
 --
 -- Database: `admin_erp`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `arrival_evaluation`
+--
+
+CREATE TABLE `arrival_evaluation` (
+  `id` int(11) NOT NULL,
+  `employee_name` varchar(100) NOT NULL,
+  `station` varchar(100) NOT NULL,
+  `booking_number` varchar(50) NOT NULL,
+  `greeting` tinyint(4) NOT NULL,
+  `documentation` tinyint(4) NOT NULL,
+  `value_info` tinyint(4) NOT NULL,
+  `vehicle_inspection` tinyint(4) NOT NULL,
+  `controls_photos` tinyint(4) NOT NULL,
+  `checkout_time` tinyint(4) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `arrival_evaluation`
+--
+
+INSERT INTO `arrival_evaluation` (`id`, `employee_name`, `station`, `booking_number`, `greeting`, `documentation`, `value_info`, `vehicle_inspection`, `controls_photos`, `checkout_time`, `created_at`) VALUES
+(2, 'Ryan Monie', 'Europcar Station', '1196705375', 4, 3, 4, 3, 3, 4, '2025-11-21 16:54:39'),
+(3, 'Heshan Sandaruwan', 'Europcar Station', '1195321889', 4, 3, 3, 4, 3, 4, '2025-11-21 16:55:17'),
+(6, 'Sampath Fernando', 'Greenmotion Station', 'EXL-6239971-6220135', 4, 4, 4, 5, 3, 3, '2025-11-27 13:12:09'),
+(7, 'Rashan Gamage', 'Greenmotion Station', '23243234', 3, 3, 2, 5, 5, 3, '2026-03-20 15:10:50');
 
 -- --------------------------------------------------------
 
@@ -66,12 +96,39 @@ INSERT INTO `departments` (`department_id`, `name`) VALUES
 (4, 'FINANCE'),
 (10, 'Fleet Management Department'),
 (2, 'HR'),
-(3, 'IT Department'),
+(3, 'IT'),
 (5, 'Marketing Department'),
 (11, 'Procurement Department'),
-(6, 'Rent a Car '),
+(6, 'Rent a Car Department'),
 (1, 'Senior Management'),
-(8, 'Transfers ');
+(8, 'Transfers Department');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `departure_evaluation`
+--
+
+CREATE TABLE `departure_evaluation` (
+  `id` int(11) NOT NULL,
+  `employee_name` varchar(100) NOT NULL,
+  `station` varchar(100) NOT NULL,
+  `booking_number` varchar(50) NOT NULL,
+  `greeting` int(11) NOT NULL,
+  `review_attempt` int(11) NOT NULL,
+  `vehicle_inspection` int(11) NOT NULL,
+  `additional_charge` int(11) NOT NULL,
+  `friendly_goodbye` int(11) NOT NULL,
+  `date_time` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `departure_evaluation`
+--
+
+INSERT INTO `departure_evaluation` (`id`, `employee_name`, `station`, `booking_number`, `greeting`, `review_attempt`, `vehicle_inspection`, `additional_charge`, `friendly_goodbye`, `date_time`) VALUES
+(10, 'Ryan Monie', 'Europcar Station', '1196705375', 4, 3, 4, 3, 4, '2025-11-21 16:52:10'),
+(13, 'Sameera Dilshan', 'Greenmotion Station', 'asdasd', 2, 3, 1, 3, 4, '2026-03-20 15:20:56');
 
 -- --------------------------------------------------------
 
@@ -84,10 +141,8 @@ CREATE TABLE `employees` (
   `employee_code` varchar(50) DEFAULT NULL,
   `employment_status` varchar(20) NOT NULL,
   `date_created` datetime NOT NULL,
-  `surname` varchar(100) NOT NULL,
-  `first_name` varchar(100) NOT NULL,
-  `middle_name` varchar(100) DEFAULT NULL,
-  `last_name` varchar(100) NOT NULL,
+  `full_name` varchar(100) NOT NULL,
+  `preferred_name` varchar(100) NOT NULL,
   `date_of_birth` date NOT NULL,
   `gender` varchar(10) NOT NULL,
   `marital_status` varchar(10) DEFAULT NULL,
@@ -104,8 +159,12 @@ CREATE TABLE `employees` (
 -- Dumping data for table `employees`
 --
 
-INSERT INTO `employees` (`employee_id`, `employee_code`, `employment_status`, `date_created`, `surname`, `first_name`, `middle_name`, `last_name`, `date_of_birth`, `gender`, `marital_status`, `nationality`, `blood_group`, `epf_number`, `attendance_type`, `created_by`, `last_updated_by`, `last_updated_date`) VALUES
-(1, 'EV-000001', 'Active', '2026-02-17 15:00:34', 'Divyanjali', 'Navodya', NULL, 'Divyanjali', '2000-05-18', 'Male', 'Single', 'Sri Lankan', 'B-', '30', 'Fingerprint', '1', '1', '2026-02-18 12:50:01');
+INSERT INTO `employees` (`employee_id`, `employee_code`, `employment_status`, `date_created`, `full_name`, `preferred_name`, `date_of_birth`, `gender`, `marital_status`, `nationality`, `blood_group`, `epf_number`, `attendance_type`, `created_by`, `last_updated_by`, `last_updated_date`) VALUES
+(8, 'EV-000008', 'Active', '2026-03-13 15:10:02', 'sdddf', 'sdf sdf', '2001-02-07', 'Male', 'Single', 'Sri Lankan', 'AB+', NULL, 'Fingerprint', '1', '1', '2026-03-13 15:10:02'),
+(9, 'EV-000009', 'Active', '2026-03-13 15:20:20', 'asdasd', 'asd asd', '2002-03-05', 'Male', 'Single', 'Sri Lankan', 'B-', NULL, 'Fingerprint', '1', '1', '2026-03-13 15:23:35'),
+(10, 'EV-000010', 'Active', '2026-03-14 22:09:17', 'Roshan Meerium', 'asd sad', '2002-02-14', 'Male', 'Single', 'Sri Lankan', 'A-', NULL, 'Fingerprint', '1', '1', '2026-03-18 11:20:27'),
+(11, 'EV-000011', 'Active', '2026-03-26 16:36:28', 'adsasdads', 'asd asd', '2001-05-11', 'Male', 'Single', 'Sri Lankan', 'B+', NULL, 'Fingerprint', '1', '1', '2026-03-26 16:36:28'),
+(12, 'EV-000012', 'Active', '2026-03-26 16:42:25', 'asasdasdasdasd', 'asdasda sdasasd', '2005-05-04', 'Male', 'Single', 'Sri Lankan', 'B-', NULL, 'Fingerprint', '1', '1', '2026-03-26 16:42:25');
 
 -- --------------------------------------------------------
 
@@ -129,7 +188,11 @@ CREATE TABLE `employee_addresses` (
 --
 
 INSERT INTO `employee_addresses` (`employee_address_id`, `employee_id`, `address_type`, `address_line_1`, `city`, `country`, `postal_code`, `is_current`) VALUES
-(4, 1, 'Residential', '109/1 Andhimulla Katana', 'Katana', 'Sri Lanka', '11500', 1);
+(15, 8, 'Residential', '109/1 Andhimulla Katana', 'Katana', 'Sri Lanka', NULL, 1),
+(18, 9, 'Other', '109/1 Andhimulla Katana', 'Katana', 'Sri Lanka', NULL, 1),
+(20, 10, 'Residential', '109/1 Andhimulla Katana', 'Katana', 'Sri Lanka', NULL, 1),
+(21, 11, 'Residential', '109/1 Andhimulla Katana', 'Katana', 'Sri Lanka', NULL, 1),
+(22, 12, 'Residential', '109/1 Andhimulla Katana', 'Katana', 'Sri Lanka', NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -150,7 +213,11 @@ CREATE TABLE `employee_bank_accounts` (
 --
 
 INSERT INTO `employee_bank_accounts` (`bank_account_id`, `employee_id`, `bank_name`, `bank_branch_name`, `bank_account_number`) VALUES
-(4, 1, 'Commercial Bank', 'Divyanjali', 'Divyanjali');
+(15, 8, 'Bank of Ceylon', 'sdf', 'sdf'),
+(18, 9, 'Bank of Ceylon', 'asd', '0759191583'),
+(20, 10, 'Nations Trust Bank', '0759191583', 'et'),
+(21, 11, 'Bank of Ceylon', 'asdasdasd', 'asdasdasd'),
+(22, 12, 'Bank of Ceylon', 'werwer', 'wrwre');
 
 -- --------------------------------------------------------
 
@@ -163,7 +230,7 @@ CREATE TABLE `employee_compensation` (
   `employee_id` bigint(20) UNSIGNED DEFAULT NULL,
   `salary_currency` char(3) NOT NULL,
   `pay_frequency` varchar(10) NOT NULL,
-  `effective_from` date NOT NULL,
+  `effective_from` date DEFAULT NULL,
   `effective_to` date DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -172,7 +239,11 @@ CREATE TABLE `employee_compensation` (
 --
 
 INSERT INTO `employee_compensation` (`comp_id`, `employee_id`, `salary_currency`, `pay_frequency`, `effective_from`, `effective_to`) VALUES
-(1, 1, 'LKR', 'Monthly', '2026-02-14', '2026-02-18');
+(8, 8, 'LKR', 'Monthly', '2026-03-13', '2026-03-20'),
+(9, 9, 'LKR', 'Monthly', '2026-03-11', '2026-03-12'),
+(10, 10, 'LKR', 'Monthly', '2026-03-13', '2026-03-20'),
+(11, 11, 'LKR', 'Monthly', '2026-03-04', '2026-04-10'),
+(12, 12, 'LKR', 'Monthly', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -193,7 +264,11 @@ CREATE TABLE `employee_compensation_components` (
 --
 
 INSERT INTO `employee_compensation_components` (`component_id`, `comp_id`, `component_type`, `component_name`, `amount`) VALUES
-(4, 1, 'Basic', 'Basic Salary', 3000.00);
+(15, 8, 'Basic', 'Basic Salary', 3000.00),
+(18, 9, 'Basic', 'Basic Salary', 3000.00),
+(20, 10, 'Basic', 'Basic Salary', 3000.00),
+(21, 11, 'Basic', 'Basic Salary', 123213123.00),
+(22, 12, 'Basic', 'Basic Salary', 23434.00);
 
 -- --------------------------------------------------------
 
@@ -214,8 +289,16 @@ CREATE TABLE `employee_contacts` (
 --
 
 INSERT INTO `employee_contacts` (`contact_id`, `employee_id`, `contact_type`, `contact_value`, `is_primary`) VALUES
-(7, 1, 'Work Email', 'sd@gmail.com', 1),
-(8, 1, 'Whatsapp Number', '064865', 1);
+(29, 8, 'Work Email', 'sd@gmail.com', 1),
+(30, 8, 'Whatsapp Number', 'wr4', 1),
+(35, 9, 'Work Email', 'adsads@gmail.com', 1),
+(36, 9, 'Whatsapp Number', 'asdasd', 1),
+(39, 10, 'Work Email', 'aasdasdsd@gmail.com', 1),
+(40, 10, 'Whatsapp Number', 'asd', 1),
+(41, 11, 'Work Email', 'asasdasdd@gmail.com', 1),
+(42, 11, 'Whatsapp Number', 'adasdasdasd', 1),
+(43, 12, 'Work Email', 'assdad@gmail.com', 1),
+(44, 12, 'Whatsapp Number', 'werwer', 1);
 
 -- --------------------------------------------------------
 
@@ -239,8 +322,7 @@ CREATE TABLE `employee_documents` (
 --
 
 INSERT INTO `employee_documents` (`employee_document_id`, `employee_id`, `doc_type`, `file_name`, `file_path`, `mime_type`, `file_size_bytes`, `uploaded_at`) VALUES
-(1, 1, 'ID Proof', 'pngtree-internet-of-everything-png-image_4539768.png', 'employees/navodya-divyanjali/id-proof/v9bToow1dHlQHtEEUhbh7QzQeNf2tCjwekCquSbN.png', 'image/png', 62745, '2026-02-17 15:00:36'),
-(2, 1, 'Certificates', 'Degree Certificate .pdf', 'employees/1/documents/vIQvMCsD88nCH1lhtkot0OZmSlSXGi0yFFMBrTpz.pdf', 'application/pdf', 429298, '2026-02-18 12:50:03');
+(2, 12, 'Offer Letter', 'Screenshot 2026-03-12 142612.png', 'employees/asdasda-sdasasd/offer-letter/BeWJjhZsTpgjAszcibwjHlYyCcUxt7bCsb6zhgVA.png', 'image/png', 126474, '2026-03-26 16:42:27');
 
 -- --------------------------------------------------------
 
@@ -261,7 +343,11 @@ CREATE TABLE `employee_emergency_contacts` (
 --
 
 INSERT INTO `employee_emergency_contacts` (`emergency_contact_id`, `employee_id`, `name`, `relationship`, `phone`) VALUES
-(4, 1, 'Divyanjali', 'Divyanjali', '0759191583');
+(15, 8, 'Navodya Divyanjali', 'sdf', '0761278989'),
+(18, 9, 'Navodya Divyanjali', 'asd', '0761278989'),
+(20, 10, 'Navodya Divyanjali', 'Katana', '0761278989'),
+(21, 11, 'Navodya Divyanjali', 'asdasd', '0761278989'),
+(22, 12, 'Navodya Divyanjali', 'wer', '0761278989');
 
 -- --------------------------------------------------------
 
@@ -281,7 +367,7 @@ CREATE TABLE `employee_experience` (
 --
 
 INSERT INTO `employee_experience` (`experience_id`, `employee_id`, `previous_employer`, `total_years`) VALUES
-(4, 1, 'Divyanjali', 3.00);
+(3, 8, 'sdf', 3.00);
 
 -- --------------------------------------------------------
 
@@ -295,6 +381,7 @@ CREATE TABLE `employee_job` (
   `job_title_id` bigint(20) UNSIGNED NOT NULL,
   `employment_type` varchar(20) NOT NULL,
   `employment_level` varchar(20) NOT NULL,
+  `company_type` varchar(255) NOT NULL,
   `date_of_joining` date NOT NULL,
   `probation_end_date` date DEFAULT NULL,
   `reporting_manager_id` bigint(20) UNSIGNED DEFAULT NULL
@@ -304,8 +391,12 @@ CREATE TABLE `employee_job` (
 -- Dumping data for table `employee_job`
 --
 
-INSERT INTO `employee_job` (`employee_id`, `department_id`, `job_title_id`, `employment_type`, `employment_level`, `date_of_joining`, `probation_end_date`, `reporting_manager_id`) VALUES
-(1, 2, 3, 'Full-Time', 'Probation', '2026-01-29', '2026-02-18', NULL);
+INSERT INTO `employee_job` (`employee_id`, `department_id`, `job_title_id`, `employment_type`, `employment_level`, `company_type`, `date_of_joining`, `probation_end_date`, `reporting_manager_id`) VALUES
+(8, 4, 1, 'Part-Time', 'Fixed- Contract', '', '2026-03-13', '2026-03-05', NULL),
+(9, 10, 2, 'Full-Time', 'Probation', 'Explore Vacations (Pvt) Ltd', '2026-03-11', NULL, NULL),
+(10, 11, 10, 'Full-Time', 'Permanent', 'Explore Vacations (Pvt) Ltd', '2026-03-13', NULL, 9),
+(11, 2, 6, 'Full-Time', 'Permanent', 'Explore Vacations (Pvt) Ltd', '2026-03-26', NULL, NULL),
+(12, 3, 6, 'Full-Time', 'Permanent', 'Explore Vacations (Pvt) Ltd', '2026-03-26', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -321,14 +412,6 @@ CREATE TABLE `employee_leave_balances` (
   `remaining` decimal(5,2) NOT NULL,
   `updated_at` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `employee_leave_balances`
---
-
-INSERT INTO `employee_leave_balances` (`leave_balance_id`, `employee_id`, `leave_policy_id`, `total_taken`, `remaining`, `updated_at`) VALUES
-(1, 1, 1, 2.00, 12.00, '2026-02-18 12:52:57'),
-(2, 1, 2, 1.00, 7.00, '2026-02-18 12:52:57');
 
 -- --------------------------------------------------------
 
@@ -347,7 +430,11 @@ CREATE TABLE `employee_yearly_leave_balance` (
 --
 
 INSERT INTO `employee_yearly_leave_balance` (`employee_id`, `leave_policy_id`, `leave_entitlement`) VALUES
-(1, 3, 2000);
+(8, 3, 30),
+(9, 1, 1),
+(10, 1, 20),
+(11, 2, 3),
+(12, 2, 3);
 
 -- --------------------------------------------------------
 
@@ -417,6 +504,7 @@ CREATE TABLE `job_titles` (
 
 INSERT INTO `job_titles` (`job_title_id`, `name`) VALUES
 (5, 'Accountant'),
+(10, 'Chauffer'),
 (6, 'Finance Manager'),
 (2, 'General Manager'),
 (3, 'Head of Department'),
@@ -523,10 +611,12 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (17, '2026_02_09_095300_create_leave_requests_table', 1),
 (18, '2026_02_09_095312_create_leave_request_documents_table', 1),
 (19, '2026_02_09_095322_create_employee_leave_balances_table', 1),
-(20, '2026_02_17_115856_create_vehicle_requests_table', 1),
-(21, '2026_03_09_094903_create_users_table', 1),
-(22, '2026_03_10_000001_create_roles_permissions_tables', 1),
-(23, '2026_02_17_124205_create_trip_details_table', 2);
+(20, '2026_02_16_111840_create_transport_services_table', 1),
+(21, '2026_02_17_115856_create_vehicle_requests_table', 1),
+(22, '2026_02_17_124205_create_trip_details_table', 1),
+(23, '2026_02_22_192935_create_personal_access_tokens_table', 1),
+(24, '2026_03_09_094903_create_users_table', 1),
+(25, '2026_03_10_000001_create_roles_permissions_tables', 1);
 
 -- --------------------------------------------------------
 
@@ -554,6 +644,32 @@ CREATE TABLE `permissions` (
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `permissions`
+--
+
+INSERT INTO `permissions` (`id`, `name`, `description`, `created_at`, `updated_at`) VALUES
+(1, 'manage_employees', NULL, '2026-03-12 05:46:47', '2026-03-12 05:46:47');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `personal_access_tokens`
+--
+
+CREATE TABLE `personal_access_tokens` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `tokenable_type` varchar(255) NOT NULL,
+  `tokenable_id` bigint(20) UNSIGNED NOT NULL,
+  `name` text NOT NULL,
+  `token` varchar(64) NOT NULL,
+  `abilities` text DEFAULT NULL,
+  `last_used_at` timestamp NULL DEFAULT NULL,
+  `expires_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- --------------------------------------------------------
 
 --
@@ -568,6 +684,14 @@ CREATE TABLE `roles` (
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `roles`
+--
+
+INSERT INTO `roles` (`id`, `name`, `description`, `created_at`, `updated_at`) VALUES
+(1, 'admin', NULL, '2026-03-12 05:46:34', '2026-03-12 05:46:34'),
+(2, 'hr-executive', NULL, '2026-03-12 06:17:17', '2026-03-12 06:17:17');
+
 -- --------------------------------------------------------
 
 --
@@ -581,6 +705,14 @@ CREATE TABLE `role_permissions` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `role_permissions`
+--
+
+INSERT INTO `role_permissions` (`id`, `role_id`, `permission_id`, `created_at`, `updated_at`) VALUES
+(1, 1, 1, NULL, NULL),
+(2, 2, 1, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -602,10 +734,13 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('7e1iDvecfh3id6nNHMQytd8uABDO0OcHLXDp3CPe', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoidjFMTzMwQWlRNDI5RE5XYUFYb2pJZjBjR0ZHSmNEejI0Y2RIMXJ0dyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7Tjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1771476516),
-('KMERthEWYzg3TnsSv2EZWky6nm5CGbfCTgqfLwKK', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoia0tCamczSlZOOEtYY01WZVZIT3NxMm81UlM1MlN2dEVSSjA1ejRhdCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjY6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9ocm1zIjtzOjU6InJvdXRlIjtzOjQ6ImhybXMiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aToxO30=', 1771477324),
-('sncgJCBMh8cxqlaTUM73cMIvJwRttZlNP34SoYYb', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiWU5tdEVMRmNmVVg4MlNnd053RHFOaDQ1dXl3MWdQQTJXR213cVI3QyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjc6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9sb2dpbiI7czo1OiJyb3V0ZSI7czo1OiJsb2dpbiI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjE7fQ==', 1771503380),
-('tCOZ8X5PRCc9ufeBbQWj5wc74ZqYhtO9zCBrvz4h', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiZTVFOVFzNUlOMEx1VE82UWpZaTU5b21UUlV2d1NiTVU5cmR1YjRoUCI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzA6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zZXJ2aWNlcyI7czo1OiJyb3V0ZSI7czo4OiJzZXJ2aWNlcyI7fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjE7fQ==', 1771569257);
+('35xLuBoe8Syx1axDbunblZm6UHdYbZD90x5gOhNn', NULL, '192.168.1.62', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'YToyOntzOjY6Il90b2tlbiI7czo0MDoiMFBIZkY3SVJxSDg2OVlxYktPMGl0VkZOdVRFYkoyQTZFRVZpUnp3USI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1774507812),
+('9kMTkzHaxGfpFOeaCjhbnwZq01jeqHh84F8wtUHf', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiRVc4aFhkMHMxb0FYa2xXMVZNSFJNN1dLc1Badkduc0kzT3BiVVFTeSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjc6Imh0dHA6Ly8xMjcuMC4wLjE6OTAwMC9sb2dpbiI7czo1OiJyb3V0ZSI7czo1OiJsb2dpbiI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1773998420),
+('CptdMvKXx8jWotXMakS25PrA2FTbyM1IGnRG0jXw', NULL, '192.168.1.62', 'PostmanRuntime/7.51.1', 'YToyOntzOjY6Il90b2tlbiI7czo0MDoiaURIS05Rd1Q0RFRrUjVCTzcxeHM3bEtTd05DRW92Rkd0dExoZjlFMiI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1774508064),
+('HVNN8jdhLE4Fu9mZDiQM0fTHfNnz3M7RgmQKLMpi', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiVjJmc2VlbXp3ZmhaUGh4RWJ1cWtoM2sxMG1Yd3FXb1ppYktHcVc5byI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzk6Imh0dHA6Ly8xMjcuMC4wLjE6OTAwMC9ocm1zL2VtcGxveWVlcy8xMCI7czo1OiJyb3V0ZSI7czoxOToiaHJtcy5lbXBsb3llZXMuc2hvdyI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjE7fQ==', 1773815575),
+('SRQ7e8gl6wmKV1SITb3Kjyyj3bYwyX7WA9Z5Mtmn', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoiY1hqNHNDNnJDUFNsaXhZNW5wU3FwY0tYczEzY3g5QlhUT2NVS3VzNCI7czozOiJ1cmwiO2E6MDp7fXM6OToiX3ByZXZpb3VzIjthOjI6e3M6MzoidXJsIjtzOjM2OiJodHRwOi8vMTI3LjAuMC4xOjkwMDAvaHJtcy9lbXBsb3llZXMiO3M6NToicm91dGUiO3M6MjA6ImhybXMuZW1wbG95ZWVzLmluZGV4Ijt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MTt9', 1773826609),
+('UAQ07o6fBvKunOkCO64MD09BbcyADeei0BnvvIA9', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoid3Ayb2E5c0VjM1BrVlpqSnl1N0ZpcDhCQ1Jha0I5aXB6TnBtUlA5TCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NDM6Imh0dHA6Ly8xMjcuMC4wLjE6OTAwMC9ocm1zL2VtcGxveWVlcy9jcmVhdGUiO3M6NToicm91dGUiO3M6MjE6ImhybXMuZW1wbG95ZWVzLmNyZWF0ZSI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjE7fQ==', 1774523553),
+('uOP9zUv5m4qSMniDlgi6IiDGfU5nCgxHHelC2f8Q', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiS2k0bVladUFSVW1FNVV0a3NxOHN2YTc1elc1d1d1N1B2UXdsaXlGYyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzA6Imh0dHA6Ly8xMjcuMC4wLjE6OTAwMC9zZXJ2aWNlcyI7czo1OiJyb3V0ZSI7czo4OiJzZXJ2aWNlcyI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjE7fQ==', 1774507376);
 
 -- --------------------------------------------------------
 
@@ -615,13 +750,21 @@ INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, 
 
 CREATE TABLE `transport_services` (
   `id` bigint(20) UNSIGNED NOT NULL,
+  `source_id` bigint(20) UNSIGNED NOT NULL,
   `type` enum('shuttle','transfers','office','personal') NOT NULL,
-  `vehicle_id` bigint(20) UNSIGNED NOT NULL,
+  `vehicle_no` varchar(50) DEFAULT NULL,
+  `is_vehicle_assigned` tinyint(1) DEFAULT NULL,
+  `vehicle_type` varchar(255) DEFAULT NULL,
+  `chauffer_phone` varchar(20) DEFAULT NULL,
+  `chauffer_name` varchar(255) DEFAULT NULL,
+  `employee_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `manager_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `status` enum('PENDING','APPROVED','REJECTED','IN_PROGRESS','ASSIGNED','START_TRIP','COMPLETED') DEFAULT NULL,
+  `reject_reason` varchar(500) DEFAULT NULL,
   `assigned_start_at` datetime NOT NULL,
   `pickup_location` varchar(255) NOT NULL DEFAULT 'Seeduwa Office',
   `dropoff_location` varchar(255) NOT NULL,
   `assigned_end_at` datetime DEFAULT NULL,
-  `chauffer_id` bigint(20) UNSIGNED NOT NULL,
   `passenger_count` int(10) UNSIGNED NOT NULL,
   `trip_code` varchar(255) DEFAULT NULL,
   `delete_note` varchar(255) DEFAULT NULL,
@@ -635,10 +778,24 @@ CREATE TABLE `transport_services` (
 -- Dumping data for table `transport_services`
 --
 
-INSERT INTO `transport_services` (`id`, `type`, `vehicle_id`, `assigned_start_at`, `pickup_location`, `dropoff_location`, `assigned_end_at`, `chauffer_id`, `passenger_count`, `trip_code`, `delete_note`, `created_at`, `updated_at`, `deleted_at`, `deleted_by`) VALUES
-(3, 'transfers', 81, '2026-02-23 14:56:00', 'Seeduwa Office', 'Horana, Sanka300', '2026-03-07 14:56:00', 1, 2, '2', NULL, '2026-02-19 09:27:04', '2026-02-19 11:04:32', NULL, NULL),
-(4, 'shuttle', 81, '2026-02-22 09:57:00', 'Seeduwa Office', 'sd', '2026-03-07 09:57:00', 1, 33, NULL, NULL, '2026-02-20 04:27:21', '2026-02-20 04:27:40', NULL, NULL),
-(5, 'shuttle', 81, '2026-02-20 10:00:00', 'Seeduwa Office', 'Horana, Sri Lanka', '2026-02-20 10:00:00', 4, 3, NULL, NULL, '2026-02-20 04:30:09', '2026-02-20 04:30:09', NULL, NULL);
+INSERT INTO `transport_services` (`id`, `source_id`, `type`, `vehicle_no`, `is_vehicle_assigned`, `vehicle_type`, `chauffer_phone`, `chauffer_name`, `employee_id`, `manager_id`, `status`, `reject_reason`, `assigned_start_at`, `pickup_location`, `dropoff_location`, `assigned_end_at`, `passenger_count`, `trip_code`, `delete_note`, `created_at`, `updated_at`, `deleted_at`, `deleted_by`) VALUES
+(16, 19, 'shuttle', 'CAB-0744', 1, 'Car', NULL, NULL, 10, NULL, 'PENDING', NULL, '2026-03-18 05:51:00', 'Weligama, Sri Lanka', 'Ella, Sri Lanka', '2026-03-21 05:51:00', 3, NULL, NULL, '2026-03-18 05:51:34', '2026-03-18 05:51:34', NULL, NULL),
+(17, 20, 'transfers', 'CBG-9526', 1, 'Car', NULL, NULL, 10, NULL, 'PENDING', NULL, '2026-03-18 09:19:00', 'Seeduwa Office', 'Sigiriya, Sri Lanka', '2026-03-21 09:19:00', 3, NULL, NULL, '2026-03-18 09:20:11', '2026-03-18 09:20:11', NULL, NULL),
+(18, 21, 'transfers', 'CAC-6595', 1, 'Car', NULL, NULL, 10, NULL, NULL, NULL, '2026-03-19 12:19:00', 'Seeduwa Office', 'Wattala, Sri Lanka', '2026-03-21 12:19:00', 3, NULL, NULL, '2026-03-19 12:19:43', '2026-03-19 12:19:43', NULL, NULL),
+(19, 22, 'transfers', 'CAD-7412', 1, 'Car', NULL, NULL, 10, NULL, NULL, NULL, '2026-03-19 12:20:00', 'Seeduwa Office', 'Sigiriya, Sri Lanka', '2026-03-26 12:20:00', 2, NULL, NULL, '2026-03-19 12:21:05', '2026-03-19 12:21:05', NULL, NULL),
+(20, 23, 'transfers', 'CAE-4853', 1, 'Car', NULL, NULL, 10, NULL, NULL, NULL, '2026-03-19 12:22:00', 'Seeduwa Office', 'Sigiriya, Sri Lanka', '2026-03-21 12:22:00', 2, NULL, NULL, '2026-03-19 12:22:14', '2026-03-19 12:22:14', NULL, NULL),
+(21, 24, 'transfers', 'CAD-6434', 1, 'Car', NULL, NULL, 10, NULL, NULL, NULL, '2026-03-19 12:24:00', 'Seeduwa Office', 'Dankotuwa, Sri Lanka', '2026-03-21 12:24:00', 3, NULL, NULL, '2026-03-19 12:24:13', '2026-03-19 12:24:13', NULL, NULL),
+(22, 25, 'transfers', 'CAI-1848', 1, 'SUV', NULL, NULL, 10, NULL, NULL, NULL, '2026-03-19 12:26:00', 'Seeduwa Office', 'Seeduwa, Sri Lanka', '2026-03-25 12:26:00', 3, NULL, NULL, '2026-03-19 12:26:42', '2026-03-19 12:26:42', NULL, NULL),
+(23, 26, 'transfers', 'CAJ-0422', 1, 'Car', NULL, NULL, 10, NULL, NULL, NULL, '2026-03-20 12:30:00', 'Seeduwa Office', 'Ahangama, Sri Lanka', '2026-03-21 12:30:00', 3, NULL, NULL, '2026-03-19 12:30:22', '2026-03-19 12:30:22', NULL, NULL),
+(24, 0, 'office', 'CBM-5716', NULL, 'Car', 'asd', 'asd sad', 10, 9, 'PENDING', NULL, '2026-03-26 00:00:00', 'Head Office', 'Colombo, Sri Lanka', '2026-03-28 23:59:59', 1, NULL, NULL, '2026-03-26 07:18:09', '2026-03-26 07:18:09', NULL, NULL),
+(25, 0, 'office', 'CBM-5716', NULL, NULL, 'asd', 'asd sad', 10, 9, 'PENDING', NULL, '2026-03-26 00:00:00', 'Head Office', 'Colombo, Sri Lanka', '2026-03-28 23:59:59', 1, NULL, NULL, '2026-03-26 07:27:53', '2026-03-26 07:27:53', NULL, NULL),
+(26, 0, 'office', 'CBG-9526', NULL, NULL, 'asd', 'asd sad', 10, 9, 'PENDING', NULL, '2026-03-26 00:00:00', 'Head Office', 'Colombo, Sri Lanka', '2026-03-28 23:59:59', 1, NULL, NULL, '2026-03-26 07:28:51', '2026-03-26 07:28:51', NULL, NULL),
+(27, 0, 'office', 'CAJ-0422', NULL, NULL, 'asd', 'asd sad', 10, 9, 'PENDING', NULL, '2026-03-26 00:00:00', 'Head Office', 'Colombo, Sri Lanka', '2026-03-28 23:59:59', 1, NULL, NULL, '2026-03-26 07:32:25', '2026-03-26 07:32:25', NULL, NULL),
+(28, 0, 'office', 'CAE-4853', NULL, NULL, 'asd', 'asd sad', 10, 9, 'PENDING', NULL, '2026-03-31 00:00:00', 'Head Office', 'Negombo, Sri Lanka', '2026-04-04 23:59:59', 1, NULL, NULL, '2026-03-26 07:35:16', '2026-03-26 07:35:16', NULL, NULL),
+(29, 0, 'office', 'CAT-9196', NULL, NULL, 'asd', 'asd sad', 10, 9, 'PENDING', NULL, '2026-03-31 00:00:00', 'Head Office', 'Jaffna, Sri Lanka', '2026-04-02 23:59:59', 1, NULL, NULL, '2026-03-26 07:50:11', '2026-03-26 07:50:11', NULL, NULL),
+(30, 0, 'office', 'CAT-2967', NULL, NULL, 'asd', 'asd sad', 10, 9, 'PENDING', NULL, '2026-03-31 00:00:00', 'Head Office', 'Jaffna, Sri Lanka', '2026-04-02 23:59:59', 1, NULL, NULL, '2026-03-26 07:54:11', '2026-03-26 07:54:11', NULL, NULL),
+(31, 0, 'office', 'CAT-2967', NULL, NULL, 'asd', 'asd sad', 10, 9, 'PENDING', NULL, '2026-03-31 00:00:00', 'Head Office', 'Jaffna, Sri Lanka', '2026-04-02 23:59:59', 1, NULL, NULL, '2026-03-26 07:57:03', '2026-03-26 07:57:03', NULL, NULL),
+(32, 0, 'office', 'CAE-4853', NULL, NULL, 'asd', 'asd sad', 10, 9, 'PENDING', NULL, '2026-03-26 00:00:00', 'Head Office', 'Trincomalee, Sri Lanka', '2026-03-31 23:59:59', 1, NULL, NULL, '2026-03-26 08:44:16', '2026-03-26 08:44:16', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -655,11 +812,11 @@ CREATE TABLE `trip_details` (
   `trip_end_odometer` int(11) DEFAULT NULL,
   `trip_start_odometer_photo` varchar(500) NOT NULL,
   `trip_end_odometer_photo` varchar(500) DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `start_trip_fuel` decimal(5,2) NOT NULL COMMENT 'Fuel % at trip start (0-100)',
-  `end_trip_fuel` decimal(5,2) DEFAULT NULL COMMENT 'Fuel % at trip end (0-100)'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `start_trip_fuel` decimal(5,2) DEFAULT NULL,
+  `end_trip_fuel` decimal(5,2) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -686,8 +843,22 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `employee_id`, `name`, `email`, `role`, `email_verified_at`, `password`, `recovery_key`, `remember_token`, `created_at`, `updated_at`) VALUES
-(1, NULL, 'Admin', 'admin@example.com', 'admin', '2026-02-17 07:03:57', '$2y$12$dgvzBLsdTSZVS6EjZvahxOgBPvcbQ3p3XeKENPBsGU8Hx2rpIxuG2', NULL, 'cOB8OL7cTNB3i3OA0oemxs0nvL1m8TlgEP2UOkExRx4cvU2sadjd5ugN9GIC', '2026-02-17 07:03:57', '2026-02-17 07:03:57'),
-(2, 1, 'Navodya Divyanjali', 'sd@gmail.com', 'user', NULL, '$2y$12$9N0fLTX.mO1pmIikjUDIDuO9Sv2Lp4lQ4NFQtaRevIkBVdTur8js.', NULL, NULL, '2026-02-17 09:30:34', '2026-02-17 09:30:34');
+(1, NULL, 'Admin', 'admin@example.com', 'admin', '2026-02-24 05:58:50', '$2y$12$8IUGdN6Y/ozW5TAk1lDlYO1QV/91Vp40l97mLRFohifk9jCFFc.D6', NULL, 'svBPnZyfwGcyYabjs3alQC8wtycyUH56dZrk6PuxrxtKIUoqrO9aCMCsBBKB', '2026-02-24 05:58:50', '2026-02-24 05:58:50'),
+(2, NULL, 'navodya', 'navodya@gmail.com', 'user', NULL, '$2y$12$dkrSqUR8BWewyOmKH/Y2E.HzmBqeVa.VI1KPMEUGmD7hV4MjahZ8G', NULL, NULL, '2026-02-24 06:01:17', '2026-02-24 06:01:17'),
+(3, NULL, 'navodya', 'navodya11@gmail.com', 'user', NULL, '$2y$12$ST07P3B.lm0qbNNHPt3GOO9tQUdCFj8TBkrvbj70gb.BJYTmhPguK', NULL, NULL, '2026-02-24 06:03:30', '2026-02-24 06:03:30'),
+(4, NULL, 'navodya', '12@gmail.com', 'user', NULL, '$2y$12$JIUmJ8Oj6k6zpJdZSuM2pOT/rmNDcURpACODIyQ1nnxJxn0eQXbSu', NULL, NULL, '2026-02-24 06:16:26', '2026-02-24 06:16:26'),
+(5, NULL, 'navodya divyanjali', 'k@gmail.com', 'user', NULL, '$2y$12$8G9hVSAgSc21RYBAdz0AyOU2ousb4KHM5VOt2/uv7RCgbNHMVpX8e', NULL, NULL, '2026-02-24 09:13:24', '2026-02-24 09:13:24'),
+(6, NULL, 'Test Test', 'fd@gmail.com', 'user', NULL, '$2y$12$22e5ySr5e92DODabQYsz5u4.1neGFarCY9srPZOAA84wZVPOqe.0q', NULL, NULL, '2026-02-24 11:57:24', '2026-02-24 11:57:24'),
+(7, NULL, 'sdf sdf', 'sdf@gmail.com', 'user', NULL, '$2y$12$g9BGwkfuspZg8G/IEIhVreqxloGF.NmkLTmnBeNBb8nUXnfnqPJ0W', NULL, NULL, '2026-03-12 04:41:53', '2026-03-12 04:41:53'),
+(8, NULL, 'Test', 'roshanzroshanz@gmail.com', 'user', NULL, '$2y$12$rlAWJfOLjO2B8fihK5DmMuMDmUyugAv6JeSvtcmObi9QzosfRLMX.', NULL, NULL, '2026-03-12 05:47:29', '2026-03-12 05:47:29'),
+(9, NULL, 'zxzxczxc', 'acc.ass@explorevacations.lk', 'user', NULL, '$2y$12$rVrfWOZx83B3UPbxBQFpH.GioL51kM/EO5mFw3QQIDwNqarfZ/G9C', NULL, NULL, '2026-03-12 06:18:01', '2026-03-12 06:18:01'),
+(10, NULL, 'asadasd', 'madhawasamantha99@gmail.com', 'hr-executive', NULL, '$2y$12$/zd1goEbQtWVv2qDF5Da1.6lUsJEBEB5radwX4iWdfGdKxCDumNWa', NULL, NULL, '2026-03-12 06:19:21', '2026-03-12 06:19:21'),
+(11, NULL, 'asd asd', 'asd@gmail.com', 'user', NULL, '$2y$12$lcQnaSTS2NVffK.WN5yKne0/gIKQ8eVDx7Z/WqgTPbcspYQwmxF62', NULL, NULL, '2026-03-12 06:23:09', '2026-03-12 06:23:09'),
+(12, 8, 'sdf sdf', 'sd@gmail.com', 'user', NULL, '$2y$12$0DilExmQcL37R2oloxpBc.24J3Bb5TVWS9uWP5k9GPvK.5WlTT3Nq', NULL, NULL, '2026-03-13 09:40:02', '2026-03-13 09:40:02'),
+(13, 9, 'asd asd', 'adsads@gmail.com', 'user', NULL, '$2y$12$r5.TmhOfzcey/p28K.OFpeVUXnQZAXu8IoObnZME2lJKIaogyFaFa', NULL, NULL, '2026-03-13 09:50:20', '2026-03-13 09:50:20'),
+(14, 10, 'asd sad', 'aasdasdsd@gmail.com', 'user', NULL, '$2y$10$f9/OGC.serLfjUzWcZudXuZCDHfABWxPXn4D/yhgHZF1P/E8CLf2K', 'HELLOOOPP', NULL, '2026-03-14 16:39:16', '2026-03-26 07:17:08'),
+(15, 11, 'asd asd', 'asasdasdd@gmail.com', 'user', NULL, '$2y$12$QQYvFqeGnz0ray3omcQpLucQdBG1v9Ni0c1eESWRu0eUaqDhbHABq', NULL, NULL, '2026-03-26 11:06:28', '2026-03-26 11:06:29'),
+(16, 12, 'asdasda sdasasd', 'assdad@gmail.com', 'user', NULL, '$2y$12$lSltYRC16h8WTFN.jYr32OaxiDlSIgZGXU6wFtToq0p16KbPH6aty', NULL, NULL, '2026-03-26 11:12:25', '2026-03-26 11:12:25');
 
 -- --------------------------------------------------------
 
@@ -702,6 +873,15 @@ CREATE TABLE `user_roles` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `user_roles`
+--
+
+INSERT INTO `user_roles` (`id`, `user_id`, `role_id`, `created_at`, `updated_at`) VALUES
+(2, 8, 2, NULL, NULL),
+(3, 9, 2, NULL, NULL),
+(4, 10, 2, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -727,23 +907,14 @@ CREATE TABLE `vehicle_requests` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `vehicle_requests`
---
-
-INSERT INTO `vehicle_requests` (`vehicle_request_id`, `employee_id`, `vehicle_reg_no`, `start_date`, `is_one_day`, `end_date`, `reason`, `manager_id`, `status`, `destinations`, `trip_code`, `reject_reason`, `created_at`, `updated_at`) VALUES
-(20, 1, 'KDA-102A', '2026-02-17 15:35:00', 1, NULL, 'Office', 1, 'APPROVED', 'Head Office - Nairobi', 'TRIP-001', NULL, '2026-02-17 09:32:01', '2026-02-17 09:32:01'),
-(21, 1, 'KCB-554B', '2026-02-21 09:00:00', 0, '2026-02-23 18:00:00', 'Transport', 1, 'APPROVED', 'Mombasa Branch Visit', 'TRIP-002', NULL, '2026-02-17 09:32:01', '2026-02-17 09:32:01'),
-(22, 1, 'KDA-222X', '2026-02-19 07:30:00', 1, NULL, 'Personal', 1, 'REJECTED', 'Shopping Mall', 'TRIP-003', 'Not eligible for personal trips', '2026-02-17 09:32:01', '2026-02-17 09:32:01'),
-(23, 1, 'KCE-908M', '2026-02-17 06:00:00', 1, NULL, 'Shuttle', 1, 'APPROVED', 'Airport Pickup', 'TRIP-004', NULL, '2026-02-17 09:32:01', '2026-02-17 09:32:01'),
-(24, 1, 'KDD-451N', '2026-02-22 10:00:00', 1, NULL, 'Office', 1, 'APPROVED', 'Client Meeting - Westlands', 'TRIP-005', NULL, '2026-02-17 09:32:01', '2026-02-17 09:32:01'),
-(25, 1, 'KDG-776H', '2026-02-25 08:30:00', 0, '2026-02-26 17:30:00', 'Transport', 1, 'PENDING', 'Kisumu Field Visit', 'TRIP-006', NULL, '2026-02-17 09:32:01', '2026-02-17 09:32:01'),
-(26, 1, 'KCY-334T', '2026-02-18 09:00:00', 1, NULL, 'Office', 1, 'APPROVED', 'CBD Office Transfer', 'TRIP-007', NULL, '2026-02-17 09:32:01', '2026-02-17 09:32:01'),
-(27, 1, 'KDF-990L', '2026-02-24 08:00:00', 1, NULL, 'Personal', 1, 'REJECTED', 'Family Event', 'TRIP-008', 'Vehicle not available', '2026-02-17 09:32:01', '2026-02-17 09:32:01'),
-(28, 1, 'KDG-881Q', '2026-02-27 11:00:00', 1, NULL, 'Office', 1, 'PENDING', 'Internal Audit Meeting', 'TRIP-010', NULL, '2026-02-17 09:32:01', '2026-02-17 09:32:01');
-
---
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `arrival_evaluation`
+--
+ALTER TABLE `arrival_evaluation`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `cache`
@@ -767,13 +938,20 @@ ALTER TABLE `departments`
   ADD UNIQUE KEY `departments_name_unique` (`name`);
 
 --
+-- Indexes for table `departure_evaluation`
+--
+ALTER TABLE `departure_evaluation`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `employees`
 --
 ALTER TABLE `employees`
   ADD PRIMARY KEY (`employee_id`),
   ADD UNIQUE KEY `uq_epf_number` (`epf_number`),
   ADD UNIQUE KEY `employees_employee_code_unique` (`employee_code`),
-  ADD KEY `idx_emp_name` (`last_name`,`first_name`),
+  ADD UNIQUE KEY `employees_epf_number_unique` (`epf_number`),
+  ADD KEY `idx_emp_name` (`full_name`,`preferred_name`),
   ADD KEY `idx_emp_status` (`employment_status`);
 
 --
@@ -930,6 +1108,15 @@ ALTER TABLE `permissions`
   ADD UNIQUE KEY `permissions_name_unique` (`name`);
 
 --
+-- Indexes for table `personal_access_tokens`
+--
+ALTER TABLE `personal_access_tokens`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `personal_access_tokens_token_unique` (`token`),
+  ADD KEY `personal_access_tokens_tokenable_type_tokenable_id_index` (`tokenable_type`,`tokenable_id`),
+  ADD KEY `personal_access_tokens_expires_at_index` (`expires_at`);
+
+--
 -- Indexes for table `roles`
 --
 ALTER TABLE `roles`
@@ -957,15 +1144,18 @@ ALTER TABLE `sessions`
 --
 ALTER TABLE `transport_services`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_vehicle_start` (`vehicle_id`,`assigned_start_at`),
-  ADD KEY `idx_chauffer_start` (`chauffer_id`,`assigned_start_at`);
+  ADD KEY `transport_services_source_id_index` (`source_id`),
+  ADD KEY `transport_services_employee_id_index` (`employee_id`),
+  ADD KEY `transport_services_manager_id_index` (`manager_id`),
+  ADD KEY `transport_services_status_index` (`status`),
+  ADD KEY `transport_services_assigned_start_at_index` (`assigned_start_at`);
 
 --
 -- Indexes for table `trip_details`
 --
 ALTER TABLE `trip_details`
   ADD PRIMARY KEY (`trip_detail_id`),
-  ADD KEY `fk_trip_details_transport_service` (`transport_service_id`);
+  ADD KEY `trip_details_transport_service_id_index` (`transport_service_id`);
 
 --
 -- Indexes for table `users`
@@ -997,46 +1187,58 @@ ALTER TABLE `vehicle_requests`
 --
 
 --
+-- AUTO_INCREMENT for table `arrival_evaluation`
+--
+ALTER TABLE `arrival_evaluation`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
 -- AUTO_INCREMENT for table `departments`
 --
 ALTER TABLE `departments`
   MODIFY `department_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
+-- AUTO_INCREMENT for table `departure_evaluation`
+--
+ALTER TABLE `departure_evaluation`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+
+--
 -- AUTO_INCREMENT for table `employees`
 --
 ALTER TABLE `employees`
-  MODIFY `employee_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `employee_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `employee_addresses`
 --
 ALTER TABLE `employee_addresses`
-  MODIFY `employee_address_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `employee_address_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT for table `employee_bank_accounts`
 --
 ALTER TABLE `employee_bank_accounts`
-  MODIFY `bank_account_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `bank_account_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT for table `employee_compensation`
 --
 ALTER TABLE `employee_compensation`
-  MODIFY `comp_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `comp_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `employee_compensation_components`
 --
 ALTER TABLE `employee_compensation_components`
-  MODIFY `component_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `component_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT for table `employee_contacts`
 --
 ALTER TABLE `employee_contacts`
-  MODIFY `contact_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `contact_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
 
 --
 -- AUTO_INCREMENT for table `employee_documents`
@@ -1048,19 +1250,19 @@ ALTER TABLE `employee_documents`
 -- AUTO_INCREMENT for table `employee_emergency_contacts`
 --
 ALTER TABLE `employee_emergency_contacts`
-  MODIFY `emergency_contact_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `emergency_contact_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT for table `employee_experience`
 --
 ALTER TABLE `employee_experience`
-  MODIFY `experience_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `experience_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `employee_leave_balances`
 --
 ALTER TABLE `employee_leave_balances`
-  MODIFY `leave_balance_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `leave_balance_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `failed_jobs`
@@ -1078,7 +1280,7 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT for table `job_titles`
 --
 ALTER TABLE `job_titles`
-  MODIFY `job_title_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `job_title_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `leave_policies`
@@ -1102,31 +1304,37 @@ ALTER TABLE `leave_request_documents`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT for table `permissions`
 --
 ALTER TABLE `permissions`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `personal_access_tokens`
+--
+ALTER TABLE `personal_access_tokens`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `roles`
 --
 ALTER TABLE `roles`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `role_permissions`
 --
 ALTER TABLE `role_permissions`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `transport_services`
 --
 ALTER TABLE `transport_services`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT for table `trip_details`
@@ -1138,19 +1346,19 @@ ALTER TABLE `trip_details`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `user_roles`
 --
 ALTER TABLE `user_roles`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `vehicle_requests`
 --
 ALTER TABLE `vehicle_requests`
-  MODIFY `vehicle_request_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `vehicle_request_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- Constraints for dumped tables
@@ -1252,7 +1460,7 @@ ALTER TABLE `role_permissions`
 -- Constraints for table `trip_details`
 --
 ALTER TABLE `trip_details`
-  ADD CONSTRAINT `fk_trip_details_transport_service` FOREIGN KEY (`transport_service_id`) REFERENCES `transport_services` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `trip_details_transport_service_id_foreign` FOREIGN KEY (`transport_service_id`) REFERENCES `transport_services` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `users`
