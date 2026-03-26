@@ -87,6 +87,9 @@ const statusStyles = {
   start_trip: { label: "Start Trip", bg: "#e0f2fe", color: "#075985" },
   in_progress: { label: "In Progress", bg: "#fef9c3", color: "#854d0e" },
   completed: { label: "Completed", bg: "#ecfdf5", color: "#047857" },
+  pending: { label: "Pending", bg: "#ecfdf5", color: "#346902" },
+  approved: { label: "Approved", bg: "#ecfdf5", color: "#8f0081" },
+  rejected: { label: "Rejected", bg: "#ecfdf5", color: "#8f0000" },
 };
 
 const Row = ({ label, value }) => (
@@ -485,6 +488,9 @@ export default function VehicleRequestDashboard({
                   <MenuItem value="START_TRIP">Start Trip</MenuItem>
                   <MenuItem value="IN_PROGRESS">In Progress</MenuItem>
                   <MenuItem value="COMPLETED">Completed</MenuItem>
+                  <MenuItem value="PENDING">Pending</MenuItem>
+                  <MenuItem value="APPROVED">Approved</MenuItem>
+                  <MenuItem value="REJECTED">Rejected</MenuItem>
                 </Select>
               </FormControl>
 

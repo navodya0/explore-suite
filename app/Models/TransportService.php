@@ -24,6 +24,7 @@ class TransportService extends Model
         'assigned_end_at',
         'pickup_location',
         'dropoff_location',
+        'status',
         'passenger_count',
         'delete_note',
         'deleted_by',
