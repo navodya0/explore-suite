@@ -207,7 +207,6 @@ export default function EmployeesCreate({
       // COMPENSATION (first component)
       "compensation.salary_currency": !isEmpty(data.compensation?.salary_currency),
       "compensation.pay_frequency": !isEmpty(data.compensation?.pay_frequency),
-      "compensation.effective_from": !isEmpty(data.compensation?.effective_from),
       "compensation.components.0.component_type": !isEmpty(data.compensation?.components?.[0]?.component_type),
       "compensation.components.0.component_name": !isEmpty(data.compensation?.components?.[0]?.component_name),
       "compensation.components.0.amount": !isEmpty(data.compensation?.components?.[0]?.amount),
@@ -1110,7 +1109,6 @@ export default function EmployeesCreate({
                 value={data.compensation.effective_from}
                 onChange={(e) => setComp("effective_from", e.target.value)}
                 fullWidth
-                {...req("compensation.effective_from")}
               />
 
               <TextField
@@ -1121,7 +1119,6 @@ export default function EmployeesCreate({
                 onChange={(e) => setComp("effective_to", e.target.value)}
                 onBlur={() => markTouched("compensation.effective_to")}
                 fullWidth
-                {...tf("compensation.effective_to")}
               />
             </Stack>
 
