@@ -27,11 +27,15 @@ function writeLog($title, $data = null) {
 }
 
 function generateBookingNumber($type = "OFFICE") {
-    $prefix = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $type), 0, 3));
+    $prefix = strtoupper($type);
+
     if ($prefix === "") {
         $prefix = "TRN";
     }
-    return $prefix . date("YmdHis") . rand(100, 999);
+
+    $random = str_pad(rand(0, 99), 2, "0", STR_PAD_LEFT);
+
+    return $prefix . "-" . $random;
 }
 
 function sendRentalToExploreDrive($payload) {
