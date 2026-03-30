@@ -1,4 +1,4 @@
-# admin-ERP
+# ERP
 
 A Laravel-based administrative ERP system for managing office-related tasks, including employees, leave, departments, job titles, transport requests, and other workflows.
 
@@ -14,8 +14,8 @@ A Laravel-based administrative ERP system for managing office-related tasks, inc
 1. Clone repo
 
 ```bash
-git clone <repo-url> admin-ERP
-cd admin-ERP
+git clone https://github.com/navodya0/explore-suite
+cd explore-suite
 ```
 
 2. Install PHP dependencies
@@ -43,7 +43,7 @@ php artisan key:generate
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=admin_erp
+DB_DATABASE=explores_
 DB_USERNAME=root
 DB_PASSWORD=
 ```
