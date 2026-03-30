@@ -315,16 +315,16 @@ const statusToKey = (s) => (s ? String(s).toLowerCase() : "assigned");
 export default function VehicleRequestDashboard({
   auth,
   vehiclesToBeOutToday = [],
-
   assignedRequests = [],
   startTripRequests = [],
   inProgressRequests = [],
   completedRequests = [],
-
+  allRequests = [],
   searchedVehicle = "",
   currentTrips = [],
   pastTrips = [],
 }) {
+
   // modal
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(null);
@@ -345,34 +345,6 @@ export default function VehicleRequestDashboard({
     setSelectedStatusLabel(label);
     setOpen(true);
   };
-
-  // Combine all lists into one (dedupe by vehicle_request_id)
-  const allRequests = useMemo(() => {
-    const merged = [
-      ...vehiclesToBeOutToday,
-      ...assignedRequests,
-      ...startTripRequests,
-      ...inProgressRequests,
-      ...completedRequests,
-      ...currentTrips,
-      ...pastTrips,
-    ];
-
-    const map = new Map();
-    merged.forEach((x) => {
-      if (!x) return;
-      map.set(x.vehicle_request_id, x);
-    });
-    return Array.from(map.values());
-  }, [
-    vehiclesToBeOutToday,
-    assignedRequests,
-    startTripRequests,
-    inProgressRequests,
-    completedRequests,
-    currentTrips,
-    pastTrips,
-  ]);
 
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [q, setQ] = useState("");
