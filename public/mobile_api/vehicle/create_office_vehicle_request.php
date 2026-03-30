@@ -77,69 +77,86 @@ function sendRentalToExploreDrive($payload) {
     return $result;
 }
 
+if (($_SERVER["REQUEST_METHOD"] ?? "") !== "POST") {
+    http_response_code(405);
+    respond(false, "Method not allowed");
+}
+
+$raw = file_get_contents("php://input");
+$body = json_decode($raw, true);
+
+writeLog("Incoming request", [
+    "raw" => $raw,
+    "decoded" => $body
+]);
+
+if (!is_array($body)) {
+    respond(false, "Invalid JSON");
+}
+
+// Required fields
+$employee_id   = (int)($body["employee_id"] ?? 0);
+$manager_id    = (int)($body["manager_id"] ?? 0);
+$vehicle_no    = trim($body["vehicle_no"] ?? "");
+$vehicle_id    = (int)($body["vehicle_id"] ?? 0);
+$from_date     = trim($body["from_date"] ?? "");
+$to_date       = trim($body["to_date"] ?? "");
+$destination   = trim($body["destination"] ?? "");
+$reason        = trim($body["reason"] ?? "Office Service");
+$vehicle_type  = trim($body["vehicle_type"] ?? "-");
+$chauffer_phone = trim($body["chauffer_phone"] ?? "");
+$chauffer_name  = trim($body["chauffer_name"] ?? "");
+
+// Optional fields
+$passenger_count = (int)($body["passenger_count"] ?? 1);
+$type = trim($body["type"] ?? "office");
+
+// Validate
+if ($employee_id <= 0) respond(false, "employee_id required");
+if ($manager_id <= 0) respond(false, "manager_id required");
+if ($vehicle_no === "") respond(false, "vehicle_no required");
+if ($vehicle_id <= 0) respond(false, "vehicle_id required");
+if ($from_date === "") respond(false, "from_date required");
+if ($to_date === "") respond(false, "to_date required");
+if ($destination === "") respond(false, "destination required");
+if ($chauffer_phone === "") respond(false, "chauffer_phone required");
+if ($chauffer_name === "") respond(false, "chauffer_name required");
+
+// convert date-only to DATETIME
+$assigned_start_at = $from_date . " 00:00:00";
+$assigned_end_at   = $to_date . " 23:59:59";
+
+// defaults because your form doesn't have pickup
+$pickup_location  = "Head Office";
+$dropoff_location = $destination;
+
+// status
+$status = "PENDING";
+
 try {
-    if (($_SERVER["REQUEST_METHOD"] ?? "") !== "POST") {
-        respond(false, "Method not allowed");
-    }
-
-    $rawBody = file_get_contents("php://input");
-    $body = json_decode($rawBody, true);
-
-    writeLog("Incoming request", [
-        "raw" => $rawBody,
-        "decoded" => $body
-    ]);
-
-    if (!is_array($body)) {
-        respond(false, "Invalid JSON");
-    }
-
-    $employee_id     = (int)($body["employee_id"] ?? 0);
-    $manager_id      = (int)($body["manager_id"] ?? 0);
-    $vehicle_no      = trim($body["vehicle_no"] ?? "");
-    $vehicle_id = (int)($body["vehicle_id"] ?? 0);
-    $from_date       = trim($body["from_date"] ?? "");
-    $to_date         = trim($body["to_date"] ?? "");
-    $destination     = trim($body["destination"] ?? "");
-    $type            = trim($body["type"] ?? "office");
-    $passenger_count = (int)($body["passenger_count"] ?? 1);
-    $chauffer_phone  = trim($body["chauffer_phone"] ?? "");
-    $chauffer_name   = trim($body["chauffer_name"] ?? "");
-
-    if ($employee_id <= 0) respond(false, "employee_id required");
-    if ($manager_id <= 0) respond(false, "manager_id required");
-    if ($vehicle_no === "") respond(false, "vehicle_no required");
-    if ($from_date === "") respond(false, "from_date required");
-    if ($to_date === "") respond(false, "to_date required");
-    if ($destination === "") respond(false, "destination required");
-    if ($chauffer_phone === "") respond(false, "chauffer_phone required");
-    if ($chauffer_name === "") respond(false, "chauffer_name required");
-
-    $assigned_start_at = $from_date . " 00:00:00";
-    $assigned_end_at   = $to_date . " 23:59:59";
-
     $stmt = $conn->prepare("
         INSERT INTO transport_services
         (
-            type, vehicle_no, chauffer_phone, chauffer_name,
+            source_id, type, vehicle_type, vehicle_id, vehicle_no, chauffer_phone, chauffer_name,
             employee_id, manager_id, status,
             assigned_start_at, pickup_location, dropoff_location, assigned_end_at,
-            passenger_count, created_at, updated_at
+            passenger_count, trip_code, created_at, updated_at
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+        VALUES
+        (
+            0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NOW(), NOW()
+        )
     ");
 
     if (!$stmt) {
         throw new Exception("Prepare failed: " . $conn->error);
     }
 
-    $status = "PENDING";
-    $pickup = "Head Office";
-    $drop   = $destination;
-
     $stmt->bind_param(
-        "ssssissssssi",
+        "ssisssissssssi",
         $type,
+        $vehicle_type,
+        $vehicle_id,
         $vehicle_no,
         $chauffer_phone,
         $chauffer_name,
@@ -147,8 +164,8 @@ try {
         $manager_id,
         $status,
         $assigned_start_at,
-        $pickup,
-        $drop,
+        $pickup_location,
+        $dropoff_location,
         $assigned_end_at,
         $passenger_count
     );
@@ -157,54 +174,51 @@ try {
         throw new Exception("Transport insert failed: " . $stmt->error);
     }
 
-    $transport_id = $stmt->insert_id;
+    $id = $stmt->insert_id;
     $stmt->close();
 
     writeLog("Transport created", [
-        "transport_id" => $transport_id
+        "transport_id" => $id,
+        "vehicle_id" => $vehicle_id
     ]);
 
-    $rentalResult = null;
+    $payload = [
+        "booking_number" => generateBookingNumber($type),
+        "vehicle_id" => $vehicle_id,
+        "company_id" => 1,
+        "driver_name" => $type,
+        "arrival_date" => $assigned_start_at,
+        "departure_date" => $assigned_end_at,
+        "passengers" => $passenger_count,
+        "status" => "booked",
+        "created_by" => 1,
+        "transport_id" => $id,
+        "vehicle_no" => $vehicle_no,
+        "reason" => $reason,
+        "vehicle_type" => $vehicle_type
+    ];
 
-    if ($vehicle_id > 0) {
-        $payload = [
-            "booking_number" => generateBookingNumber($type),
-            "vehicle_id" => $vehicle_id,
-            "company_id" => 1,
-            "driver_name" => $type,
-            "arrival_date" => $assigned_start_at,
-            "departure_date" => $assigned_end_at,
-            "passengers" => $passenger_count,
-            "status" => "booked",
-            "created_by" => 1
-        ];
+    $rentalResult = sendRentalToExploreDrive($payload);
 
-        $rentalResult = sendRentalToExploreDrive($payload);
+    if (!$rentalResult["success"]) {
+        writeLog("Rental sync failed", [
+            "transport_id" => $id,
+            "rental" => $rentalResult
+        ]);
 
-        if (!$rentalResult["success"]) {
-            writeLog("Rental sync failed", [
-                "transport_id" => $transport_id,
-                "rental" => $rentalResult
-            ]);
-
-            respond(false, "Transport created, but rental sync failed", [
-                "transport_id" => $transport_id,
-                "rental" => $rentalResult
-            ]);
-        }
-    } else {
-        writeLog("Rental sync skipped", [
-            "reason" => "vehicle_id <= 0"
+        respond(false, "Transport created, but rental sync failed", [
+            "id" => $id,
+            "rental" => $rentalResult
         ]);
     }
 
     writeLog("Final success", [
-        "transport_id" => $transport_id,
+        "transport_id" => $id,
         "rental" => $rentalResult
     ]);
 
-    respond(true, "Created", [
-        "transport_id" => $transport_id,
+    respond(true, "Request created", [
+        "id" => $id,
         "rental" => $rentalResult
     ]);
 
@@ -216,9 +230,5 @@ try {
     ]);
 
     http_response_code(500);
-    respond(false, "Server error", [
-        "message" => $e->getMessage(),
-        "file" => basename($e->getFile()),
-        "line" => $e->getLine()
-    ]);
+    respond(false, "Server error: " . $e->getMessage());
 }
