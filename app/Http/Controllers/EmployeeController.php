@@ -27,9 +27,42 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\UploadedFile;
 
 class EmployeeController extends Controller
 {
+	
+	private function saveEmployeeDocument(Employee $employee, array $doc, UploadedFile $file): string
+{
+    $docFolder = Str::slug($doc['doc_type'] ?? 'other');
+    $directory = "employees/{$employee->employee_id}/{$docFolder}";
+
+    if (!Storage::disk('public')->exists($directory)) {
+        Storage::disk('public')->makeDirectory($directory);
+    }
+
+    $filename = Str::random(40) . '.' . $file->getClientOriginalExtension();
+
+    $storedPath = Storage::disk('public')->putFileAs($directory, $file, $filename);
+
+    Log::info('EMPLOYEE DOC DEBUG', [
+        'original_name' => $file->getClientOriginalName(),
+        'directory' => $directory,
+        'stored_path' => $storedPath,
+        'disk_root' => Storage::disk('public')->path(''),
+        'full_path' => Storage::disk('public')->path($storedPath),
+        'exists_after_save' => $storedPath ? Storage::disk('public')->exists($storedPath) : false,
+        'public_url' => asset('storage/' . $storedPath),
+    ]);
+
+    if (!$storedPath || !Storage::disk('public')->exists($storedPath)) {
+        throw new \Exception('File upload failed. File was not written to disk.');
+    }
+
+    return $storedPath;
+}
+	
     public function index()
     {
         $employees = Employee::with([
@@ -155,7 +188,7 @@ class EmployeeController extends Controller
 
                 'yearly_leave' => ['required', 'array', 'min:1'],
                 'yearly_leave.*.leave_policy_id' => ['required','integer','exists:leave_policies,leave_policy_id'],
-                'yearly_leave.*.leave_entitlement' => ['required','integer','min:0'],
+				'yearly_leave.*.leave_entitlement' => ['required', 'numeric', 'min:0'],
 
                 'employee_documents' => ['nullable','array'],
                 'employee_documents.*.doc_type' => ['required','string','max:30'],
@@ -254,8 +287,7 @@ class EmployeeController extends Controller
                         'leave_policy_id' => (int) $yl['leave_policy_id'],
                     ],
                     [
-                        'leave_entitlement' => (int) ($yl['leave_entitlement'] ?? 0),
-                    ]
+'leave_entitlement' => (float) ($yl['leave_entitlement'] ?? 0),                    ]
                 );
             }
 
@@ -375,6 +407,11 @@ class EmployeeController extends Controller
             'yearlyLeaveBalances.policy',     
             'compensations.components',
         ]);
+		
+		$employee->documents->transform(function ($doc) {
+    $doc->url = Storage::disk('public')->url($doc->file_path);
+    return $doc;
+});
 
 
         return inertia('HRMS/EmployeesShow', [
@@ -483,8 +520,8 @@ class EmployeeController extends Controller
             'compensation.components.*.amount' => ['nullable','numeric'],
             'yearly_leave' => ['nullable','array'],
             'yearly_leave.*.leave_policy_id' => ['required','integer','exists:leave_policies,leave_policy_id'],
-            'yearly_leave.*.leave_entitlement' => ['required','integer'],
-            'employee_documents' => ['nullable','array'],
+'yearly_leave.*.leave_entitlement' => ['required', 'numeric', 'min:0'],
+			'employee_documents' => ['nullable','array'],
             'employee_documents.*.doc_type' => ['required','string','max:30'],
             'employee_documents.*.files' => ['nullable','array'],
             'employee_documents.*.files.*' => ['file','max:10240'],
@@ -584,8 +621,8 @@ class EmployeeController extends Controller
                 ->map(fn ($yl) => [
                     'employee_id' => $employee->employee_id,
                     'leave_policy_id' => (int) $yl['leave_policy_id'],
-                    'leave_entitlement' => (int) ($yl['leave_entitlement'] ?? 0),
-                ])
+'leave_entitlement' => (float) ($yl['leave_entitlement'] ?? 0),
+				])
                 ->values()
                 ->all();
 
@@ -645,33 +682,39 @@ class EmployeeController extends Controller
             }
 
             // docs append only
-            foreach (($validated['employee_documents'] ?? []) as $doc) {
-                $files = $doc['files'] ?? [];
+foreach (($validated['employee_documents'] ?? []) as $doc) {
+    $files = $doc['files'] ?? [];
 
-                if (count($files) === 0) continue;
-                foreach ($files as $file) {
-                    $path = $file->store("employees/{$employee->employee_id}/documents", 'public');
+    if (empty($files)) {
+        continue;
+    }
 
-                    Log::info('DOC SAVE', [
-                    'doc_type' => $doc['doc_type'] ?? null,
-                    'file_class' => is_object($file) ? get_class($file) : gettype($file),
-                    'original' => is_object($file) ? $file->getClientOriginalName() : null,
-                    'path' => $path ?? null,
-                    ]);
+    foreach ($files as $file) {
+        if (!($file instanceof UploadedFile)) {
+            throw new \Exception('Invalid uploaded file received.');
+        }
 
+        $path = $this->saveEmployeeDocument($employee, $doc, $file);
 
-                    EmployeeDocument::create([
-                        'employee_id' => $employee->employee_id,
-                        'doc_type' => $doc['doc_type'],
-                        'file_name' => $file->getClientOriginalName(),
-                        'file_path' => $path,
-                        'mime_type' => $file->getClientMimeType(),
-                        'file_size_bytes' => $file->getSize(),
-                        'uploaded_at' => now(),
-                    ]);
-                }
-            }
+        EmployeeDocument::create([
+            'employee_id' => $employee->employee_id,
+            'doc_type' => $doc['doc_type'],
+            'file_name' => $file->getClientOriginalName(),
+            'file_path' => $path,
+            'mime_type' => $file->getClientMimeType(),
+            'file_size_bytes' => $file->getSize(),
+            'uploaded_at' => now(),
+        ]);
+    }
+}
         });
+		
+		Log::info('LARAVEL PATH CHECK', [
+    'base_path' => base_path(),
+    'public_path' => public_path(),
+    'storage_path' => storage_path(),
+    'storage_public_path' => storage_path('app/public'),
+]);
 
         return redirect()->route('hrms.employees.index')->with('success', 'Employee updated successfully.');
     }

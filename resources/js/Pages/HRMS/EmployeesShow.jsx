@@ -308,8 +308,9 @@ const jobTitleName =
               ) : (
                 <Grid container spacing={2}>
                   {asArray(documents).map((doc, i) => {
-                    const url = doc?.url ?? (doc?.file_path ? `/storage/${doc.file_path}` : null);
-                    const isImage = (doc?.mime_type ?? "").startsWith("image/");
+const url = doc?.url ?? null;
+
+const isImage = (doc?.mime_type ?? "").startsWith("image/");
 
                     return (
                       <Grid item xs={12} sm={6} md={3} key={i}>
