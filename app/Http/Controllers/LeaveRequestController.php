@@ -57,7 +57,7 @@ class LeaveRequestController extends Controller
             return [
                 'name' => trim(($lr->employee->preferred_name ?? '')),
                 'days' => (string) $lr->number_of_days . ' Day(s)',
-                'reason' => (string) $lr->reason . ' Day(s)',
+                'reason' => (string) $lr->reason,
                 'department' => $lr->employee?->job?->department?->name ?? null,
                 'manager' => trim(($lr->overseeMember?->preferred_name ?? '')),
                 'leave_request_id' => $lr->leave_request_id,

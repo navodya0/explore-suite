@@ -45,6 +45,14 @@ export default function Leave({ auth, employeesOnLeave = [], pendingRequests = [
     }
   };
 
+  const formatDateRange = (start, end) => {
+    if (!start && !end) return "-";
+    if (start && end) {
+      return start === end ? start : `${start} to ${end}`;
+    }
+    return start || end;
+  };
+
   return (
     <AuthenticatedLayout user={auth.user}>
       <Head title="Leave" />
@@ -263,7 +271,7 @@ export default function Leave({ auth, employeesOnLeave = [], pendingRequests = [
               >
                 {(employeesOnLeave || []).map((item) => (
                   <Box
-                    key={item.name}
+                    key={item.leave_request_id}
                     sx={{
                       p: 2,
                       borderRadius: 2,
@@ -288,6 +296,10 @@ export default function Leave({ auth, employeesOnLeave = [], pendingRequests = [
                       Department : {item.department}
                     </Typography>
 
+                    <Typography variant="caption" sx={{ color: "#374151", display: "block" }}>
+                      Date : {formatDateRange(item.start, item.end)}
+                    </Typography>
+
                     <Typography variant="caption" sx={{ color: "#374151" }}>
                       Reason : {item.reason}
                     </Typography>
@@ -310,7 +322,7 @@ export default function Leave({ auth, employeesOnLeave = [], pendingRequests = [
                 Pending Leave Requests
               </Typography>
 
-              <Box
+            <Box
                 sx={{
                   display: "grid",
                   gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, 
@@ -319,7 +331,7 @@ export default function Leave({ auth, employeesOnLeave = [], pendingRequests = [
               >
                 {(pendingRequests || []).map((item) => (
                   <Box
-                    key={item.name}
+                    key={item.leave_request_id}
                     sx={{
                       p: 2,
                       borderRadius: 2,
@@ -336,13 +348,17 @@ export default function Leave({ auth, employeesOnLeave = [], pendingRequests = [
                       {item.name}
                     </Typography>
 
-                    <Typography variant="caption" sx={{ color: "#6b7280" }}>
+                    <Typography variant="caption" sx={{ color: "#6b7280", display: "block" }}>
                       {item.days}
                     </Typography>
 
                     <Box sx={{ mt: 1 }}>
                       <Typography variant="caption" sx={{ color: "#374151", display: "block" }}>
                         Department: {item.department}
+                      </Typography>
+
+                      <Typography variant="caption" sx={{ color: "#374151", display: "block" }}>
+                        Date : {formatDateRange(item.start, item.end)}
                       </Typography>
 
                       <Typography variant="caption" sx={{ color: "#374151" }}>

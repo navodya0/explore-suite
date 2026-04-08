@@ -77,7 +77,6 @@ function sendRentalToExploreDrive($payload) {
     return $result;
 }
 
-
 if (($_SERVER["REQUEST_METHOD"] ?? "") !== "POST") {
     http_response_code(405);
     respond(false, "Method not allowed");
