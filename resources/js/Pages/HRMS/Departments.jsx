@@ -149,7 +149,6 @@ export default function Departments({ departments = [] }) {
       </GridToolbarContainer>
     );
   }
-
   return (
     <AuthenticatedLayout>
       <Head title="Departments" />

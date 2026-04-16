@@ -27,7 +27,7 @@ class LeaveRequest extends Model
         'is_special_request' => 'boolean',
         'requested_at' => 'datetime',
         'updated_at' => 'datetime',
-        'status' => LeaveRequestStatus::class,
+        // 'status' => LeaveRequestStatus::class,
     ];
 
     public function employee()

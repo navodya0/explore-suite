@@ -26,12 +26,12 @@ function writeLog($title, $data = null) {
     file_put_contents($file, $text, FILE_APPEND);
 }
 
-function generateBookingNumber($type = "OFFICE") {
-    $prefix = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $type), 0, 3));
-    if ($prefix === "") {
-        $prefix = "TRN";
-    }
-    return $prefix . date("YmdHis") . rand(100, 999);
+function generateBookingNumber($type = "PERSONAL") {
+    $type = strtoupper($type);
+
+    $random = str_pad(rand(0, 99), 2, "0", STR_PAD_LEFT);
+
+    return $type . "-" . $random;
 }
 
 function sendRentalToExploreDrive($payload) {
@@ -95,21 +95,21 @@ if (!is_array($body)) {
 }
 
 // Required fields
-$employee_id   = (int)($body["employee_id"] ?? 0);
-$manager_id    = (int)($body["manager_id"] ?? 0);
-$vehicle_no    = trim($body["vehicle_no"] ?? "");
-$vehicle_id    = (int)($body["vehicle_id"] ?? 0);
-$from_date     = trim($body["from_date"] ?? "");
-$to_date       = trim($body["to_date"] ?? "");
-$destination   = trim($body["destination"] ?? "");
-$reason        = trim($body["reason"] ?? "Office Service");
-$vehicle_type  = trim($body["vehicle_type"] ?? "-");
+$employee_id    = (int)($body["employee_id"] ?? 0);
+$manager_id     = (int)($body["manager_id"] ?? 0);
+$vehicle_no     = trim($body["vehicle_no"] ?? "");
+$vehicle_id     = (int)($body["vehicle_id"] ?? 0);
+$from_date      = trim($body["from_date"] ?? "");
+$to_date        = trim($body["to_date"] ?? "");
+$destination    = trim($body["destination"] ?? "");
+$reason         = trim($body["reason"] ?? "Personal use");
+$vehicle_type   = trim($body["vehicle_type"] ?? "-");
 $chauffer_phone = trim($body["chauffer_phone"] ?? "");
 $chauffer_name  = trim($body["chauffer_name"] ?? "");
 
 // Optional fields
 $passenger_count = (int)($body["passenger_count"] ?? 1);
-$type = trim($body["type"] ?? "office");
+$type            = trim($body["type"] ?? "personal");
 
 // Validate
 if ($employee_id <= 0) respond(false, "employee_id required");
@@ -118,7 +118,7 @@ if ($vehicle_no === "") respond(false, "vehicle_no required");
 if ($vehicle_id <= 0) respond(false, "vehicle_id required");
 if ($from_date === "") respond(false, "from_date required");
 if ($to_date === "") respond(false, "to_date required");
-if ($destination === "") respond(false, "destination required");
+// if ($destination === "") respond(false, "destination required");
 if ($chauffer_phone === "") respond(false, "chauffer_phone required");
 if ($chauffer_name === "") respond(false, "chauffer_name required");
 
@@ -126,7 +126,7 @@ if ($chauffer_name === "") respond(false, "chauffer_name required");
 $assigned_start_at = $from_date . " 00:00:00";
 $assigned_end_at   = $to_date . " 23:59:59";
 
-// defaults because your form doesn't have pickup
+// defaults
 $pickup_location  = "Head Office";
 $dropoff_location = $destination;
 
@@ -137,10 +137,24 @@ try {
     $stmt = $conn->prepare("
         INSERT INTO transport_services
         (
-            source_id, type, vehicle_type, vehicle_id, vehicle_no, chauffer_phone, chauffer_name,
-            employee_id, manager_id, status,
-            assigned_start_at, pickup_location, dropoff_location, assigned_end_at,
-            passenger_count, trip_code, created_at, updated_at
+            source_id,
+            type,
+            vehicle_type,
+            vehicle_id,
+            vehicle_no,
+            chauffer_phone,
+            chauffer_name,
+            employee_id,
+            manager_id,
+            status,
+            assigned_start_at,
+            pickup_location,
+            dropoff_location,
+            assigned_end_at,
+            passenger_count,
+            trip_code,
+            created_at,
+            updated_at
         )
         VALUES
         (
@@ -182,20 +196,24 @@ try {
         "vehicle_id" => $vehicle_id
     ]);
 
+    // Sync to Laravel rentals table
     $payload = [
         "booking_number" => generateBookingNumber($type),
-        "vehicle_id" => $vehicle_id,
-        "company_id" => 1,
-        "driver_name" => $type,
-        "arrival_date" => $assigned_start_at,
+        "vehicle_id"     => $vehicle_id,
+        "company_id"     => 1,
+        "driver_name"    => $chauffer_name,
+        "arrival_date"   => $assigned_start_at,
         "departure_date" => $assigned_end_at,
-        "passengers" => $passenger_count,
-        "status" => "booked",
-        "created_by" => 1,
-        "transport_id" => $id,
-        "vehicle_no" => $vehicle_no,
-        "reason" => $reason,
-        "vehicle_type" => $vehicle_type
+        "passengers"     => $passenger_count,
+        "status"         => "booked",
+        "created_by"     => 1,
+
+        // optional extras
+        "transport_id"   => $id,
+        "vehicle_no"     => $vehicle_no,
+        "reason"         => $reason,
+        "contact_no"     => $chauffer_phone,
+        "vehicle_type"   => $vehicle_type
     ];
 
     $rentalResult = sendRentalToExploreDrive($payload);

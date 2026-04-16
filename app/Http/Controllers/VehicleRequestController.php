@@ -9,6 +9,19 @@ use Carbon\Carbon;
 
 class VehicleRequestController extends Controller
 {
+
+    private function makePhotoUrl($path)
+    {
+        if (!$path) {
+            return null;
+        }
+
+        $path = str_replace('\\', '/', $path);
+        $path = ltrim($path, '/');
+
+        return asset('mobile-api/' . $path);
+    }
+    
     public function dashboard(Request $request)
     {
         $today = Carbon::today();
@@ -36,53 +49,44 @@ class VehicleRequestController extends Controller
 
                 'employee_id' => $ts->employee_id,
                 'manager_id' => $ts->manager_id,
-
-                // Chauffer (for fallback in React)
                 'chauffer_name' => $ts->chauffer_name,
                 'chauffer_phone' => $ts->chauffer_phone ?? null,
 
-                // Dates for UI
                 'start_date' => $start?->toDateString(),
                 'end_date' => $end?->toDateString(),
                 'is_one_day' => $start ? (!$end || $start->toDateString() === $end->toDateString()) : true,
 
-                // UI mapping
                 'reason' => $ts->note,
                 'start_destinations' => $ts->pickup_location,
                 'destinations' => $ts->dropoff_location,
                 'trip_code' => $ts->trip_code,
-
-                // Status
                 'status' => $ts->status,
                 'reject_reason' => $ts->reject_reason,
-
                 'created_at' => optional($ts->created_at)->toDateString(),
 
-                // Odometer modal data (latest trip)
                 'trip_details' => $latestTrip ? [
                     'trip_detail_id' => $latestTrip->trip_detail_id,
                     'trip_start_datetime' => optional($latestTrip->trip_start_datetime)->toDateTimeString(),
                     'trip_end_datetime' => optional($latestTrip->trip_end_datetime)->toDateTimeString(),
                     'trip_start_odometer' => $latestTrip->trip_start_odometer,
                     'trip_end_odometer' => $latestTrip->trip_end_odometer,
+                    'trip_start_odometer_photo' => $this->makePhotoUrl($latestTrip->trip_start_odometer_photo),
+            'trip_end_odometer_photo'   => $this->makePhotoUrl($latestTrip->trip_end_odometer_photo),
 
-                    'trip_start_odometer_photo' => $latestTrip->trip_start_odometer_photo
-                        ? $photoBase . ltrim($latestTrip->trip_start_odometer_photo, '/')
-                        : null,
-
-                    'trip_end_odometer_photo' => $latestTrip->trip_end_odometer_photo
-                        ? $photoBase . ltrim($latestTrip->trip_end_odometer_photo, '/')
-                        : null,
                     'start_trip_fuel' => $latestTrip->start_trip_fuel,
                     'end_trip_fuel' => $latestTrip->end_trip_fuel,
-                                    ] : null,
-                                ];
-                            };
+                ] : null,
+            ];
+        };
 
-        // Base query (eager load relations)
         $base = TransportService::with(['tripDetails', 'employee']);
 
-        // OUT TODAY = active statuses + start today
+        $allRequests = (clone $base)
+            ->orderByDesc('assigned_start_at')
+            ->get()
+            ->map($format)
+            ->values();
+
         $vehiclesToBeOutToday = (clone $base)
             ->whereIn('status', ['ASSIGNED', 'START_TRIP', 'IN_PROGRESS'])
             ->whereDate('assigned_start_at', $today)
@@ -91,7 +95,6 @@ class VehicleRequestController extends Controller
             ->map($format)
             ->values();
 
-        // Buckets by your real statuses
         $assignedRequests = (clone $base)
             ->where('status', 'ASSIGNED')
             ->orderByDesc('assigned_start_at')
@@ -120,7 +123,6 @@ class VehicleRequestController extends Controller
             ->map($format)
             ->values();
 
-        // SEARCH (vehicle_no string)
         $currentTrips = collect();
         $pastTrips = collect();
 
@@ -140,7 +142,6 @@ class VehicleRequestController extends Controller
                 ->values();
         }
 
-        // Stats (your real statuses)
         $totalRequests = TransportService::count();
         $assignedCount = TransportService::where('status', 'ASSIGNED')->count();
         $startTripCount = TransportService::where('status', 'START_TRIP')->count();
@@ -148,17 +149,15 @@ class VehicleRequestController extends Controller
         $completedCount = TransportService::where('status', 'COMPLETED')->count();
 
         return Inertia::render('HRMS/VehicleRequestDashboard', [
+            'allRequests' => $allRequests,
             'vehiclesToBeOutToday' => $vehiclesToBeOutToday,
-
             'assignedRequests' => $assignedRequests,
             'startTripRequests' => $startTripRequests,
             'inProgressRequests' => $inProgressRequests,
             'completedRequests' => $completedRequests,
-
             'searchedVehicle' => $vehicleNo,
             'currentTrips' => $currentTrips,
             'pastTrips' => $pastTrips,
-
             'stats' => [
                 'totalRequests' => $totalRequests,
                 'assigned' => $assignedCount,
