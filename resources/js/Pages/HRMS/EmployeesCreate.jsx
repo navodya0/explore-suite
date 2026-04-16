@@ -207,6 +207,7 @@ export default function EmployeesCreate({
       // COMPENSATION (first component)
       "compensation.salary_currency": !isEmpty(data.compensation?.salary_currency),
       "compensation.pay_frequency": !isEmpty(data.compensation?.pay_frequency),
+      "compensation.effective_from": !isEmpty(data.compensation?.effective_from),
       "compensation.components.0.component_type": !isEmpty(data.compensation?.components?.[0]?.component_type),
       "compensation.components.0.component_name": !isEmpty(data.compensation?.components?.[0]?.component_name),
       "compensation.components.0.amount": !isEmpty(data.compensation?.components?.[0]?.amount),
@@ -243,25 +244,30 @@ export default function EmployeesCreate({
     onBlur: () => markTouched(key),
   });
 
-  const workEmail = useMemo(() => {
-    const w = data.contacts.find((c) => c.contact_type === "Work Email");
-    return (w?.contact_value || "").trim();
-  }, [data.contacts]);
+const loginEmail = useMemo(() => {
+  const selectedEmail = data.contacts.find(
+    (c) =>
+      (c.contact_type === "Work Email" || c.contact_type === "Personal Email") &&
+      c.contact_value?.trim()
+  );
 
-  const isWorkEmailInvalid = useMemo(() => {
-    if (!workEmail) return false;
-    return !emailRegex.test(workEmail);
-  }, [workEmail]);
+  return (selectedEmail?.contact_value || "").trim();
+}, [data.contacts]);
 
-  useEffect(() => {
-    if (workEmail && !isWorkEmailInvalid) {
-      setData((prev) => ({
-        ...prev,
-        user_email: workEmail,
-        user_password: "Test@123",
-      }));
-    }
-  }, [workEmail, isWorkEmailInvalid, setData]);
+const isLoginEmailInvalid = useMemo(() => {
+  if (!loginEmail) return false;
+  return !emailRegex.test(loginEmail);
+}, [loginEmail]);
+
+useEffect(() => {
+  if (loginEmail && !isLoginEmailInvalid) {
+    setData((prev) => ({
+      ...prev,
+      user_email: loginEmail,
+      user_password: "Test@123",
+    }));
+  }
+}, [loginEmail, isLoginEmailInvalid, setData]);
 
   const submit = (e) => {
     e.preventDefault();
@@ -282,14 +288,14 @@ export default function EmployeesCreate({
       return;
     }
 
-    if (isWorkEmailInvalid) {
-      setAlert({
-        open: true,
-        type: "error",
-        message: "Please enter a valid Work Email address before saving.",
-      });
-      return;
-    }
+if (isLoginEmailInvalid) {
+  setAlert({
+    open: true,
+    type: "error",
+    message: "Please enter a valid email address before saving.",
+  });
+  return;
+}
 
     post("/hrms/employees", {
       preserveScroll: true,
@@ -832,8 +838,11 @@ export default function EmployeesCreate({
             <Stack spacing={2}>
               {data.contacts.map((c, idx) => {
                 const key = `contacts.${idx}.contact_value`;
-                const isWork = c.contact_type === "Work Email";
-                const localEmailErr = isWork && c.contact_value && !emailRegex.test(c.contact_value);
+                const isEmailType =
+                  c.contact_type === "Work Email" || c.contact_type === "Personal Email";
+
+                  const localEmailErr =
+                    isEmailType && c.contact_value && !emailRegex.test(c.contact_value);
 
                 const base = tf(key);
                 const showReq = (touched[key] || submittedRef.current) && requiredErrors?.[key];
@@ -1109,6 +1118,7 @@ export default function EmployeesCreate({
                 value={data.compensation.effective_from}
                 onChange={(e) => setComp("effective_from", e.target.value)}
                 fullWidth
+                {...req("compensation.effective_from")}
               />
 
               <TextField
@@ -1119,6 +1129,7 @@ export default function EmployeesCreate({
                 onChange={(e) => setComp("effective_to", e.target.value)}
                 onBlur={() => markTouched("compensation.effective_to")}
                 fullWidth
+                {...tf("compensation.effective_to")}
               />
             </Stack>
 

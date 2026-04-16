@@ -1,57 +1,430 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, router, usePage } from "@inertiajs/react";
+import { Head, router } from "@inertiajs/react";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
-import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined";
 
 import {
   Box,
-  Stack,
   Typography,
   List,
   ListItemButton,
   ListItemText,
   Divider,
-  TextField,
-  MenuItem,
-  Autocomplete,
-  CircularProgress,
+  Tabs,
+  Tab,
+  Paper,
+  Modal,
+  Stack,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TablePagination,
+  Chip,
 } from "@mui/material";
 
 const SIDEBAR_WIDTH = 240;
 
-export default function Leave({ auth, employeesOnLeave = [], pendingRequests = [], stats = {}, employees = [] }) {
-  const [selectedEmployee, setSelectedEmployee] = useState(null);
-  const [leaveBalances, setLeaveBalances] = useState([]);
-  const [loading, setLoading] = useState(false);
+function TabPanel({ children, value, index }) {
+  return (
+    <div hidden={value !== index}>
+      {value === index && <Box sx={{ pt: 2 }}>{children}</Box>}
+    </div>
+  );
+}
 
-  const handleEmployeeChange = async (event, value) => {
-    const empId = value?.id;
-    setSelectedEmployee(value);
-    setLeaveBalances([]);
+function formatBytes(bytes) {
+  if (!bytes && bytes !== 0) return "-";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
 
-    if (!empId) return;
+function StatusChip({ status }) {
+  const colorMap = {
+    Pending: "warning",
+    Approved: "success",
+    Rejected: "error",
+  };
 
-    setLoading(true);
-    try {
-      const response = await fetch(`/hrms/leave-balances/${empId}`);
-      const data = await response.json();
-      setLeaveBalances(data.balances || []);
-    } catch (error) {
-      console.error("Error fetching leave balances:", error);
-    } finally {
-      setLoading(false);
-    }
+  return (
+    <Chip
+      label={status || "-"}
+      color={colorMap[status] || "default"}
+      size="small"
+      variant="filled"
+    />
+  );
+}
+
+function LeaveDetailsModal({ open, onClose, row }) {
+  if (!row) return null;
+
+  return (
+    <Modal open={open} onClose={onClose}>
+      <Box
+        sx={{
+          width: { xs: "95%", md: 760 },
+          maxHeight: "90vh",
+          overflowY: "auto",
+          bgcolor: "#fff",
+          mx: "auto",
+          my: "4vh",
+          borderRadius: 3,
+          boxShadow: 24,
+          p: 3,
+        }}
+      >
+        <Typography variant="h6" fontWeight={900} sx={{ mb: 2 }}>
+          Leave Request Details
+        </Typography>
+
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+            gap: 2,
+          }}
+        >
+          <DetailItem label="Employee" value={row.name} />
+          <DetailItem label="Department" value={row.department} />
+          <DetailItem label="Leave Type" value={row.type} />
+          <DetailItem label="Status" value={row.status} />
+          <DetailItem label="From" value={row.start} />
+          <DetailItem label="To" value={row.end} />
+          <DetailItem label="Days" value={row.days} />
+          <DetailItem
+            label="Oversee Member"
+            value={row.oversee_member?.name || "-"}
+          />
+          <DetailItem
+            label="Half Day Session"
+            value={row.half_day_session || "-"}
+          />
+          <DetailItem
+            label="Special Request"
+            value={row.is_special_request ? "Yes" : "No"}
+          />
+        </Box>
+
+        <Box sx={{ mt: 2 }}>
+          <DetailBlock label="Reason" value={row.reason} />
+          <DetailBlock label="Manager Comment" value={row.manager_comment} />
+          <DetailBlock label="Reliever Comment" value={row.reliever_comment} />
+          <DetailBlock label="Address" value={row.address} />
+        </Box>
+
+        <Box sx={{ mt: 3 }}>
+          <Typography fontWeight={800} sx={{ mb: 1.5 }}>
+            Documents
+          </Typography>
+
+          {row.documents?.length ? (
+            <Stack spacing={1}>
+              {row.documents.map((doc) => (
+                <Box
+                  key={doc.leave_request_document_id}
+                  sx={{
+                    border: "1px solid #e5e7eb",
+                    borderRadius: 2,
+                    p: 1.5,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: 2,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <Box>
+                    <Typography fontWeight={700}>{doc.file_name}</Typography>
+                    <Typography variant="caption" sx={{ color: "#6b7280" }}>
+                      {doc.mime_type || "-"} • {formatBytes(doc.file_size_bytes)} • {doc.uploaded_at || "-"}
+                    </Typography>
+                  </Box>
+
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    component="a"
+                    href={doc.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    View
+                  </Button>
+                </Box>
+              ))}
+            </Stack>
+          ) : (
+            <Typography sx={{ color: "#6b7280" }}>
+              No documents uploaded.
+            </Typography>
+          )}
+        </Box>
+
+        <Stack direction="row" justifyContent="flex-end" sx={{ mt: 3 }}>
+          <Button variant="contained" onClick={onClose}>
+            Close
+          </Button>
+        </Stack>
+      </Box>
+    </Modal>
+  );
+}
+
+function DetailItem({ label, value }) {
+  return (
+    <Box
+      sx={{
+        border: "1px solid #e5e7eb",
+        borderRadius: 2,
+        p: 1.5,
+        backgroundColor: "#f9fafb",
+      }}
+    >
+      <Typography sx={{ fontSize: "0.78rem", color: "#6b7280" }}>
+        {label}
+      </Typography>
+      <Typography fontWeight={700}>{value || "-"}</Typography>
+    </Box>
+  );
+}
+
+function DetailBlock({ label, value }) {
+  return (
+    <Box
+      sx={{
+        border: "1px solid #e5e7eb",
+        borderRadius: 2,
+        p: 1.5,
+        backgroundColor: "#f9fafb",
+        mb: 1.5,
+      }}
+    >
+      <Typography sx={{ fontSize: "0.78rem", color: "#6b7280", mb: 0.5 }}>
+        {label}
+      </Typography>
+      <Typography>{value || "-"}</Typography>
+    </Box>
+  );
+}
+
+function PaginatedLeaveTable({ rows, onOpenModal }) {
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(8);
+
+  const paginatedRows = useMemo(() => {
+    const start = page * rowsPerPage;
+    return rows.slice(start, start + rowsPerPage);
+  }, [rows, page, rowsPerPage]);
+
+  const handleChangePage = (_, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    const value = parseInt(event.target.value, 10);
+    setRowsPerPage(value);
+    setPage(0);
+  };
+
+  return (
+    <Paper
+      sx={{
+        borderRadius: 3,
+        border: "1px solid #e5e7eb",
+        overflow: "hidden",
+      }}
+    >
+      <TableContainer>
+        <Table>
+          <TableHead>
+            <TableRow sx={{ backgroundColor: "#f9fafb" }}>
+              <TableCell sx={{ fontWeight: 800 }}>Employee</TableCell>
+              <TableCell sx={{ fontWeight: 800 }}>Department</TableCell>
+              <TableCell sx={{ fontWeight: 800 }}>Leave Type</TableCell>
+              <TableCell sx={{ fontWeight: 800 }}>Days</TableCell>
+              <TableCell sx={{ fontWeight: 800 }}>Date Range</TableCell>
+              <TableCell sx={{ fontWeight: 800 }}>Status</TableCell>
+              <TableCell sx={{ fontWeight: 800 }}>Action</TableCell>
+            </TableRow>
+          </TableHead>
+
+          <TableBody>
+            {paginatedRows.length ? (
+              paginatedRows.map((row) => (
+                <TableRow
+                  key={row.leave_request_id}
+                  hover
+                  sx={{
+                    "&:hover": {
+                      backgroundColor: "#f9fafb",
+                    },
+                  }}
+                >
+                  <TableCell>{row.name || "-"}</TableCell>
+                  <TableCell>{row.department || "-"}</TableCell>
+                  <TableCell>{row.type || "-"}</TableCell>
+                  <TableCell>{row.days || "-"}</TableCell>
+                  <TableCell>{row.dateRange || "-"}</TableCell>
+                  <TableCell>
+                    <StatusChip status={row.status} />
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={() => onOpenModal(row)}
+                    >
+                      View Details
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={7} align="center" sx={{ py: 4, color: "#6b7280" }}>
+                  No records found.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      <TablePagination
+        component="div"
+        count={rows.length}
+        page={page}
+        onPageChange={handleChangePage}
+        rowsPerPage={rowsPerPage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+        rowsPerPageOptions={[5, 8, 10, 25, 50]}
+      />
+    </Paper>
+  );
+}
+
+function PaginatedBalanceTable({ rows }) {
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(8);
+
+  const paginatedRows = useMemo(() => {
+    const start = page * rowsPerPage;
+    return rows.slice(start, start + rowsPerPage);
+  }, [rows, page, rowsPerPage]);
+
+  return (
+    <Paper
+      sx={{
+        borderRadius: 3,
+        border: "1px solid #e5e7eb",
+        overflow: "hidden",
+      }}
+    >
+      <TableContainer>
+        <Table>
+          <TableHead>
+            <TableRow sx={{ backgroundColor: "#f9fafb" }}>
+              <TableCell sx={{ fontWeight: 800 }}>Employee Code</TableCell>
+              <TableCell sx={{ fontWeight: 800 }}>Employee Name</TableCell>
+              <TableCell sx={{ fontWeight: 800 }}>Department</TableCell>
+              <TableCell sx={{ fontWeight: 800 }}>Policy</TableCell>
+              <TableCell sx={{ fontWeight: 800 }}>Entitlement</TableCell>
+              <TableCell sx={{ fontWeight: 800 }}>Taken</TableCell>
+              <TableCell sx={{ fontWeight: 800 }}>Remaining</TableCell>
+            </TableRow>
+          </TableHead>
+
+          <TableBody>
+            {paginatedRows.length ? (
+              paginatedRows.map((row, index) => (
+                <TableRow key={`${row.employee_id}-${row.policy_name}-${index}`} hover>
+                  <TableCell>{row.employee_code || "-"}</TableCell>
+                  <TableCell>{row.employee_name || "-"}</TableCell>
+                  <TableCell>{row.department || "-"}</TableCell>
+                  <TableCell>{row.policy_name || "-"}</TableCell>
+                  <TableCell>{row.leave_entitlement ?? "-"}</TableCell>
+                  <TableCell>{row.total_taken ?? 0}</TableCell>
+                  <TableCell>{row.remaining ?? 0}</TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={7} align="center" sx={{ py: 4, color: "#6b7280" }}>
+                  No leave balances found.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      <TablePagination
+        component="div"
+        count={rows.length}
+        page={page}
+        onPageChange={(_, newPage) => setPage(newPage)}
+        rowsPerPage={rowsPerPage}
+        onRowsPerPageChange={(event) => {
+          setRowsPerPage(parseInt(event.target.value, 10));
+          setPage(0);
+        }}
+        rowsPerPageOptions={[5, 8, 10, 25, 50]}
+      />
+    </Paper>
+  );
+}
+
+export default function LeaveDashboard({
+  auth,
+  employeesOnLeave = [],
+  pendingRequests = [],
+  approvedRequests = [],
+  rejectedRequests = [],
+  employeeBalances = [],
+  stats = {},
+}) {
+  const [tab, setTab] = useState(0);
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [openModal, setOpenModal] = useState(false);
+
+  const formatDateRange = (start, end) => {
+    if (!start && !end) return "-";
+    if (start && end) return start === end ? start : `${start} to ${end}`;
+    return start || end;
+  };
+
+  const mapLeaveRows = (list) =>
+    list.map((item) => ({
+      ...item,
+      dateRange: formatDateRange(item.start, item.end),
+    }));
+
+  const pendingData = useMemo(() => mapLeaveRows(pendingRequests), [pendingRequests]);
+  const approvedData = useMemo(() => mapLeaveRows(approvedRequests), [approvedRequests]);
+  const rejectedData = useMemo(() => mapLeaveRows(rejectedRequests), [rejectedRequests]);
+  const onLeaveTodayData = useMemo(() => mapLeaveRows(employeesOnLeave), [employeesOnLeave]);
+
+  const handleOpenModal = (row) => {
+    setSelectedRow(row);
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedRow(null);
+    setOpenModal(false);
   };
 
   return (
     <AuthenticatedLayout user={auth.user}>
-      <Head title="Leave" />
+      <Head title="Leave Dashboard" />
 
       <Box sx={{ display: "flex", minHeight: "100vh", backgroundColor: "#f5f7fa" }}>
-        
-        {/* LEFT SIDEBAR */}
         <Box
           sx={{
             width: SIDEBAR_WIDTH,
@@ -67,7 +440,6 @@ export default function Leave({ auth, employeesOnLeave = [], pendingRequests = [
           <Divider sx={{ mb: 2 }} />
 
           <List disablePadding>
-
             <ListItemButton
               onClick={() => router.get("/suite-services")}
               sx={{
@@ -98,264 +470,96 @@ export default function Leave({ auth, employeesOnLeave = [], pendingRequests = [
                 primaryTypographyProps={{ fontWeight: 600 }}
               />
             </ListItemButton>
-
-            <Divider sx={{ my: 2 }} />
-
-            {/* EMPLOYEE LEAVE BALANCES SECTION */}
-            <Typography fontWeight={900} sx={{ fontSize: "0.9rem", mb: 1 }}>
-              LEAVE BALANCES
-            </Typography>
-
-            <Autocomplete
-              options={employees}
-              getOptionLabel={(option) => `${option.name} (${option.code})`}
-              value={selectedEmployee}
-              onChange={handleEmployeeChange}
-              isOptionEqualToValue={(option, value) => option.id === value?.id}
-              size="small"
-              fullWidth
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Search Employee"
-                  placeholder="Type name or code..."
-                />
-              )}
-              sx={{ mb: 2 }}
-            />
-
-            {loading && (
-              <Stack alignItems="center" sx={{ py: 2 }}>
-                <CircularProgress size={24} />
-              </Stack>
-            )}
-
-            {!loading && leaveBalances.length > 0 && (
-              <Stack spacing={1}>
-                {leaveBalances.map((balance) => (
-                  <Box
-                    key={balance.leave_balance_id}
-                    sx={{
-                      p: 1.5,
-                      borderRadius: 1,
-                      backgroundColor: "#f0f4f8",
-                      border: "1px solid #e0e7ff",
-                    }}
-                  >
-                    <Typography fontWeight={600} sx={{ fontSize: "0.85rem", color: "#374151" }}>
-                      {balance.policy_name}
-                    </Typography>
-                    <Stack direction="row" sx={{ mt: 0.5 }} spacing={1}>
-                      <Box sx={{ flex: 1 }}>
-                        <Typography sx={{ fontSize: "0.7rem", color: "#6b7280" }}>
-                          Entitlement
-                        </Typography>
-                        <Typography sx={{ fontSize: "0.9rem", fontWeight: 700, color: "#0c6eca" }}>
-                          {balance.leave_entitlement ?? '-'}
-                        </Typography>
-                      </Box>
-
-                      <Box sx={{ flex: 1 }}>
-                        <Typography sx={{ fontSize: "0.7rem", color: "#6b7280" }}>
-                          Taken
-                        </Typography>
-                        <Typography sx={{ fontSize: "0.9rem", fontWeight: 700, color: "#dc2626" }}>
-                          {balance.total_taken}
-                        </Typography>
-                      </Box>
-
-                      <Box sx={{ flex: 1 }}>
-                        <Typography sx={{ fontSize: "0.7rem", color: "#6b7280" }}>
-                          Remaining
-                        </Typography>
-                        <Typography sx={{ fontSize: "0.9rem", fontWeight: 700, color: "#16a34a" }}>
-                          {balance.remaining}
-                        </Typography>
-                      </Box>
-                    </Stack>
-                  </Box>
-                ))}
-              </Stack>
-            )}
-
-            {!loading && selectedEmployee && leaveBalances.length === 0 && (
-              <Typography sx={{ fontSize: "0.85rem", color: "#6b7280", p: 1 }}>
-                No leave balances found.
-              </Typography>
-            )}
           </List>
-        </Box>
 
-        {/* MAIN CONTENT */}
-        <Box sx={{ flex: 1, p: { xs: 2, md: 4 } }}>
+          <Divider sx={{ my: 2 }} />
 
-          <Typography variant="h4" fontWeight={900} sx={{ color: "#111827", mb: 3 }}>
-            Leave Dashboard
+          <Typography fontWeight={900} sx={{ fontSize: "0.95rem", mb: 1 }}>
+            SUMMARY
           </Typography>
 
-          {/* ===== SUMMARY CARDS ===== */}
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(4, 1fr)" },
-              gap: 2,
-              mb: 4,
-            }}
-          >
+          <Box sx={{ display: "grid", gap: 1.5 }}>
             {[
               { label: "On Leave Today", value: stats.onLeaveToday ?? 0, color: "#064c8d" },
               { label: "Pending Requests", value: stats.pendingRequests ?? 0, color: "#7f540a" },
               { label: "Approved", value: stats.approved ?? 0, color: "#16a34a" },
-              { label: "Rejected", value: stats.rejected ?? 0, color: "#810909" },
+              { label: "Rejected", value: stats.rejected ?? 0, color: "#b91c1c" },
             ].map((item) => (
               <Box
                 key={item.label}
                 sx={{
-                  backgroundColor: "#ffffff",
+                  backgroundColor: "#f9fafb",
                   border: "1px solid #e5e7eb",
-                  borderRadius: 3,
-                  p: 3,
-                  boxShadow: "0 6px 20px rgba(0,0,0,0.04)",
+                  borderRadius: 2,
+                  p: 1.5,
                 }}
               >
-                <Typography variant="body2" sx={{ color: "#6b7280" }}>
+                <Typography sx={{ fontSize: "0.8rem", color: "#6b7280" }}>
                   {item.label}
                 </Typography>
-                <Typography
-                  variant="h4"
-                  fontWeight={900}
-                  sx={{ color: item.color, mt: 1 }}
-                >
+                <Typography fontWeight={900} sx={{ color: item.color, fontSize: "1.3rem" }}>
                   {item.value}
                 </Typography>
               </Box>
             ))}
           </Box>
+        </Box>
 
-          {/* ===== TWO COLUMN SECTION ===== */}
-          <Box
+        <Box sx={{ flex: 1, p: { xs: 2, md: 4 } }}>
+          <Typography variant="h4" fontWeight={900} sx={{ color: "#111827", mb: 3 }}>
+            Leave Dashboard
+          </Typography>
+
+          <Paper
             sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" },
-              gap: 3,
+              borderRadius: 3,
+              border: "1px solid #e5e7eb",
+              overflow: "hidden",
             }}
           >
-            {/* === TODAY ON LEAVE === */}
-            <Box
-              sx={{
-                backgroundColor: "#ffffff",
-                border: "1px solid #e5e7eb",
-                borderRadius: 3,
-                p: 3,
-                boxShadow: "0 6px 20px rgba(0,0,0,0.04)",
-              }}
+            <Tabs
+              value={tab}
+              onChange={(e, value) => setTab(value)}
+              variant="scrollable"
+              scrollButtons="auto"
             >
-              <Typography fontWeight={800} sx={{ mb: 2 }}>
-                Employees On Leave Today
-              </Typography>
+              <Tab label={`Pending (${pendingRequests.length})`} />
+              <Tab label={`Approved (${approvedRequests.length})`} />
+              <Tab label={`Rejected (${rejectedRequests.length})`} />
+              <Tab label={`On Leave Today (${employeesOnLeave.length})`} />
+              <Tab label={`Leave Balances (${employeeBalances.length})`} />
+            </Tabs>
 
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-                  gap: 2,
-                }}
-              >
-                {(employeesOnLeave || []).map((item) => (
-                  <Box
-                    key={item.name}
-                    sx={{
-                      p: 2,
-                      borderRadius: 2,
-                      border: "1px solid #e5e7eb",
-                      backgroundColor: "#f9fafb",
-                      transition: "0.2s ease",
-                      "&:hover": {
-                        boxShadow: "0 4px 14px rgba(0,0,0,0.06)",
-                        transform: "translateY(-2px)",
-                      },
-                    }}
-                  >
-                    <Typography fontWeight={700} sx={{ color: "#111827" }}>
-                      {item.name}
-                    </Typography>
+            <Box sx={{ p: 2 }}>
+              <TabPanel value={tab} index={0}>
+                <PaginatedLeaveTable rows={pendingData} onOpenModal={handleOpenModal} />
+              </TabPanel>
 
-                    <Typography variant="caption" sx={{ color: "#6b7280", display: "block", mb: 1 }}>
-                      {item.type}
-                    </Typography>
+              <TabPanel value={tab} index={1}>
+                <PaginatedLeaveTable rows={approvedData} onOpenModal={handleOpenModal} />
+              </TabPanel>
 
-                    <Typography variant="caption" sx={{ color: "#374151", display: "block" }}>
-                      Department : {item.department}
-                    </Typography>
+              <TabPanel value={tab} index={2}>
+                <PaginatedLeaveTable rows={rejectedData} onOpenModal={handleOpenModal} />
+              </TabPanel>
 
-                    <Typography variant="caption" sx={{ color: "#374151" }}>
-                      Reason : {item.reason}
-                    </Typography>
-                  </Box>
-                ))}
-              </Box>
+              <TabPanel value={tab} index={3}>
+                <PaginatedLeaveTable rows={onLeaveTodayData} onOpenModal={handleOpenModal} />
+              </TabPanel>
+
+              <TabPanel value={tab} index={4}>
+                <PaginatedBalanceTable rows={employeeBalances} />
+              </TabPanel>
             </Box>
-
-            {/* === PENDING REQUESTS === */}
-            <Box
-              sx={{
-                backgroundColor: "#ffffff",
-                border: "1px solid #e5e7eb",
-                borderRadius: 3,
-                p: 3,
-                boxShadow: "0 6px 20px rgba(0,0,0,0.04)",
-              }}
-            >
-              <Typography fontWeight={800} sx={{ mb: 2 }}>
-                Pending Leave Requests
-              </Typography>
-
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, 
-                  gap: 2,
-                }}
-              >
-                {(pendingRequests || []).map((item) => (
-                  <Box
-                    key={item.name}
-                    sx={{
-                      p: 2,
-                      borderRadius: 2,
-                      border: "1px solid #e5e7eb",
-                      backgroundColor: "#f9fafb",
-                      transition: "0.2s ease",
-                      "&:hover": {
-                        boxShadow: "0 4px 14px rgba(0,0,0,0.06)",
-                        transform: "translateY(-2px)",
-                      },
-                    }}
-                  >
-                    <Typography fontWeight={700} sx={{ color: "#111827" }}>
-                      {item.name}
-                    </Typography>
-
-                    <Typography variant="caption" sx={{ color: "#6b7280" }}>
-                      {item.days}
-                    </Typography>
-
-                    <Box sx={{ mt: 1 }}>
-                      <Typography variant="caption" sx={{ color: "#374151", display: "block" }}>
-                        Department: {item.department}
-                      </Typography>
-
-                      <Typography variant="caption" sx={{ color: "#374151" }}>
-                        Reason : {item.reason}
-                      </Typography>
-                    </Box>
-                  </Box>
-                ))}
-              </Box>
-            </Box>
-          </Box>
+          </Paper>
         </Box>
       </Box>
+
+      <LeaveDetailsModal
+        open={openModal}
+        onClose={handleCloseModal}
+        row={selectedRow}
+      />
     </AuthenticatedLayout>
   );
 }
