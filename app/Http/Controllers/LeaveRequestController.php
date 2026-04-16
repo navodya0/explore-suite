@@ -16,102 +16,133 @@ class LeaveRequestController extends Controller
     {
         $today = Carbon::today()->toDateString();
 
-        $onLeave = LeaveRequest::with(['employee.job.department','policy','overseeMember'])
+        $onLeave = LeaveRequest::with([
+                'employee.job.department',
+                'policy',
+                'overseeMember',
+                'documents'
+            ])
             ->where('status', 'Approved')
             ->whereDate('leave_start_date', '<=', $today)
             ->whereDate('leave_end_date', '>=', $today)
             ->get();
 
-        $pending = LeaveRequest::with(['employee','policy','overseeMember'])
+        $pending = LeaveRequest::with([
+                'employee.job.department',
+                'policy',
+                'overseeMember',
+                'documents'
+            ])
             ->where('status', 'Pending')
             ->orderByDesc('requested_at')
             ->get();
 
-        $approvedCount = LeaveRequest::where('status', 'Approved')->count();
-        $rejectedCount = LeaveRequest::where('status', 'Rejected')->count();
+        $approved = LeaveRequest::with([
+                'employee.job.department',
+                'policy',
+                'overseeMember',
+                'documents'
+            ])
+            ->where('status', 'Approved')
+            ->orderByDesc('requested_at')
+            ->get();
+
+        $rejected = LeaveRequest::with([
+                'employee.job.department',
+                'policy',
+                'overseeMember',
+                'documents'
+            ])
+            ->where('status', 'Rejected')
+            ->orderByDesc('requested_at')
+            ->get();
+
+        $approvedCount = $approved->count();
+        $rejectedCount = $rejected->count();
         $pendingCount = $pending->count();
 
-        $employeesOnLeave = $onLeave->map(function ($lr) {
-            $balance = EmployeeYearlyLeaveBalance::where('employee_id', $lr->employee_id)
-                ->where('leave_policy_id', $lr->leave_policy_id)
-                ->first();
-
+        $mapLeaveRequest = function ($lr) {
             return [
-                'name' => trim(($lr->employee->preferred_name ?? '')),
-                'type' => $lr->policy?->name ?? null,
-                'department' => $lr->employee?->job?->department?->name ?? null,
-                'manager' => trim(($lr->overseeMember?->preferred_name ?? '')),
                 'leave_request_id' => $lr->leave_request_id,
+                'name' => trim($lr->employee->preferred_name ?? ''),
+                'employee_id' => $lr->employee_id,
+                'type' => $lr->policy?->name ?? '-',
+                'department' => $lr->employee?->job?->department?->name ?? '-',
+                'days' => (string) $lr->number_of_days . ' Day(s)',
+                'number_of_days' => $lr->number_of_days,
+                'reason' => (string) ($lr->reason ?? '-'),
                 'start' => optional($lr->leave_start_date)->toDateString(),
                 'end' => optional($lr->leave_end_date)->toDateString(),
-                'number_of_days' => $lr->number_of_days,
-                'reason' => $lr->reason,
-                'balance' => $balance?->leave_entitlement,
+                'status' => $lr->status,
                 'half_day_session' => $lr->half_day_session,
                 'manager_comment' => $lr->manager_comment,
                 'reliever_comment' => $lr->reliever_comment,
+                'address' => $lr->address,
+                'is_special_request' => (bool) $lr->is_special_request,
+                'requested_at' => optional($lr->requested_at)->toDateTimeString(),
+                'updated_at' => optional($lr->updated_at)->toDateTimeString(),
+                'oversee_member' => [
+                    'id' => $lr->overseeMember?->employee_id,
+                    'name' => trim($lr->overseeMember?->preferred_name ?? ''),
+                ],
+                'documents' => $lr->documents->map(function ($doc) {
+                    return [
+                        'leave_request_document_id' => $doc->leave_request_document_id,
+                        'file_name' => $doc->file_name,
+                        'file_path' => $doc->file_path,
+                        'mime_type' => $doc->mime_type,
+                        'file_size_bytes' => $doc->file_size_bytes,
+                        'uploaded_at' => optional($doc->uploaded_at)->toDateTimeString(),
+                        'url' => url('mobile-api/' . ltrim($doc->file_path, '/')),
+                    ];
+                })->values(),
             ];
-        });
+        };
 
-        $pendingList = $pending->map(function ($lr) {
-            return [
-                'name' => trim(($lr->employee->preferred_name ?? '')),
-                'days' => (string) $lr->number_of_days . ' Day(s)',
-                'reason' => (string) $lr->reason,
-                'department' => $lr->employee?->job?->department?->name ?? null,
-                'manager' => trim(($lr->overseeMember?->preferred_name ?? '')),
-                'leave_request_id' => $lr->leave_request_id,
-                'start' => optional($lr->leave_start_date)->toDateString(),
-                'end' => optional($lr->leave_end_date)->toDateString(),
-            ];
-        });
+        $employeesOnLeave = $onLeave->map($mapLeaveRequest);
+        $pendingList = $pending->map($mapLeaveRequest);
+        $approvedList = $approved->map($mapLeaveRequest);
+        $rejectedList = $rejected->map($mapLeaveRequest);
 
-        $employees = Employee::orderBy('preferred_name')
-            ->select('employee_id', 'employee_code', 'preferred_name')
+        $employeeBalances = Employee::with([
+                'job.department',
+                'leaveBalances.policy',
+                'yearlyLeaveBalances'
+            ])
+            ->orderBy('preferred_name')
             ->get()
-            ->map(fn ($e) => [
-                'id' => $e->employee_id,
-                'name' => trim(($e->preferred_name ?? '')),
-                'code' => $e->employee_code,
-            ]);
+            ->flatMap(function ($employee) {
+                return $employee->leaveBalances->map(function ($balance) use ($employee) {
+                    $yearlyBalance = $employee->yearlyLeaveBalances
+                        ->where('leave_policy_id', $balance->leave_policy_id)
+                        ->first();
 
-        $totalEntitlement = EmployeeYearlyLeaveBalance::sum('leave_entitlement');
+                    return [
+                        'employee_id' => $employee->employee_id,
+                        'employee_code' => $employee->employee_code,
+                        'employee_name' => trim($employee->preferred_name ?? ''),
+                        'department' => $employee->job?->department?->name ?? '-',
+                        'policy_name' => $balance->policy?->name ?? 'Unknown',
+                        'leave_entitlement' => $yearlyBalance?->leave_entitlement ?? 0,
+                        'total_taken' => (float) $balance->total_taken,
+                        'remaining' => (float) $balance->remaining,
+                    ];
+                });
+            })
+            ->values();
 
         return Inertia::render('HRMS/LeaveDashboard', [
             'employeesOnLeave' => $employeesOnLeave,
             'pendingRequests' => $pendingList,
-            'employees' => $employees,
+            'approvedRequests' => $approvedList,
+            'rejectedRequests' => $rejectedList,
+            'employeeBalances' => $employeeBalances,
             'stats' => [
                 'onLeaveToday' => $employeesOnLeave->count(),
                 'pendingRequests' => $pendingCount,
                 'approved' => $approvedCount,
                 'rejected' => $rejectedCount,
-                'totalEntitlement' => (int) $totalEntitlement,
             ],
-        ]);
-    }
-
-    public function getEmployeeLeaveBalances($employeeId)
-    {
-        $balances = EmployeeLeaveBalance::with('policy')
-            ->where('employee_id', $employeeId)
-            ->get()
-            ->map(function ($balance) {
-                $yearlyBalance = EmployeeYearlyLeaveBalance::where('employee_id', $balance->employee_id)
-                    ->where('leave_policy_id', $balance->leave_policy_id)
-                    ->first();
-
-                return [
-                    'leave_balance_id' => $balance->leave_balance_id,
-                    'policy_name' => $balance->policy?->name ?? 'Unknown',
-                    'leave_entitlement' => $yearlyBalance?->leave_entitlement ?? 0,
-                    'total_taken' => (float) $balance->total_taken,
-                    'remaining' => (float) $balance->remaining,
-                ];
-            });
-
-        return response()->json([
-            'balances' => $balances,
         ]);
     }
 }
