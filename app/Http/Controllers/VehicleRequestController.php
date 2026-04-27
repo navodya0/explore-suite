@@ -9,7 +9,6 @@ use Carbon\Carbon;
 
 class VehicleRequestController extends Controller
 {
-
     private function makePhotoUrl($path)
     {
         if (!$path) {
@@ -21,16 +20,17 @@ class VehicleRequestController extends Controller
 
         return asset('mobile-api/' . $path);
     }
-    
+
     public function dashboard(Request $request)
     {
         $today = Carbon::today();
         $vehicleNo = $request->get('vehicle_no');
 
-        $format = function ($ts) {
+        $base = TransportService::with(['tripDetails', 'employee']);
+
+        $format = function ($ts, $attemptNo = null) {
             $start = $ts->assigned_start_at ? Carbon::parse($ts->assigned_start_at) : null;
-            $end   = $ts->assigned_end_at ? Carbon::parse($ts->assigned_end_at) : null;
-            $photoBase = rtrim(config('app.url'), '/') . '/mobile-api/';
+            $end = $ts->assigned_end_at ? Carbon::parse($ts->assigned_end_at) : null;
 
             $latestTrip = $ts->tripDetails
                 ?->sortByDesc('trip_start_datetime')
@@ -40,7 +40,6 @@ class VehicleRequestController extends Controller
             return [
                 'vehicle_request_id' => $ts->id,
                 'type' => $ts->type,
-                'passenger_count' => $ts->passenger_count,
                 'vehicle_no' => $ts->vehicle_no,
 
                 'employee_name' => $ts->employee?->preferred_name
@@ -52,9 +51,13 @@ class VehicleRequestController extends Controller
                 'chauffer_name' => $ts->chauffer_name,
                 'chauffer_phone' => $ts->chauffer_phone ?? null,
 
+                'attempts_count' => $attemptNo,
+
                 'start_date' => $start?->toDateString(),
                 'end_date' => $end?->toDateString(),
-                'is_one_day' => $start ? (!$end || $start->toDateString() === $end->toDateString()) : true,
+                'is_one_day' => $start
+                    ? (!$end || $start->toDateString() === $end->toDateString())
+                    : true,
 
                 'reason' => $ts->note,
                 'start_destinations' => $ts->pickup_location,
@@ -71,67 +74,71 @@ class VehicleRequestController extends Controller
                     'trip_start_odometer' => $latestTrip->trip_start_odometer,
                     'trip_end_odometer' => $latestTrip->trip_end_odometer,
                     'trip_start_odometer_photo' => $this->makePhotoUrl($latestTrip->trip_start_odometer_photo),
-            'trip_end_odometer_photo'   => $this->makePhotoUrl($latestTrip->trip_end_odometer_photo),
-
+                    'trip_end_odometer_photo' => $this->makePhotoUrl($latestTrip->trip_end_odometer_photo),
                     'start_trip_fuel' => $latestTrip->start_trip_fuel,
                     'end_trip_fuel' => $latestTrip->end_trip_fuel,
                 ] : null,
             ];
         };
 
-        $base = TransportService::with(['tripDetails', 'employee']);
+        $mapWithRunningAttempt = function ($collection) use ($format) {
+            $counters = [];
 
-        $allRequests = (clone $base)
-            ->orderByDesc('assigned_start_at')
-            ->get()
-            ->map($format)
-            ->values();
+            return $collection->map(function ($ts) use (&$counters, $format) {
+                $employeeId = $ts->employee_id ?? 'guest';
+                $type = strtolower($ts->type ?? 'unknown');
+                $key = $employeeId . '|' . $type;
 
-        $vehiclesToBeOutToday = (clone $base)
-            ->whereIn('status', ['ASSIGNED', 'START_TRIP', 'IN_PROGRESS'])
-            ->whereDate('assigned_start_at', $today)
-            ->orderByDesc('assigned_start_at')
-            ->get()
-            ->map($format)
-            ->values();
+                $counters[$key] = ($counters[$key] ?? 0) + 1;
 
-        $assignedRequests = (clone $base)
-            ->where('status', 'ASSIGNED')
-            ->orderByDesc('assigned_start_at')
-            ->get()
-            ->map($format)
-            ->values();
+                return $format($ts, $counters[$key]);
+            })->values();
+        };
 
-        $startTripRequests = (clone $base)
-            ->where('status', 'START_TRIP')
-            ->orderByDesc('assigned_start_at')
-            ->get()
-            ->map($format)
-            ->values();
+        $latestFirst = function ($query) use ($mapWithRunningAttempt) {
+            $records = $query
+                ->orderBy('assigned_start_at', 'asc')
+                ->orderBy('id', 'asc')
+                ->get();
 
-        $inProgressRequests = (clone $base)
-            ->where('status', 'IN_PROGRESS')
-            ->orderByDesc('assigned_start_at')
-            ->get()
-            ->map($format)
-            ->values();
+            return $mapWithRunningAttempt($records)
+                ->sortByDesc(function ($item) {
+                    return $item['start_date'] ?? '0000-00-00';
+                })
+                ->values();
+        };
 
-        $completedRequests = (clone $base)
-            ->where('status', 'COMPLETED')
-            ->orderByDesc('assigned_start_at')
-            ->get()
-            ->map($format)
-            ->values();
+        $allRequests = $latestFirst(clone $base);
+
+        $vehiclesToBeOutToday = $latestFirst(
+            (clone $base)
+                ->whereIn('status', ['ASSIGNED', 'START_TRIP', 'IN_PROGRESS'])
+                ->whereDate('assigned_start_at', $today)
+        );
+
+        $assignedRequests = $latestFirst(
+            (clone $base)->where('status', 'ASSIGNED')
+        );
+
+        $startTripRequests = $latestFirst(
+            (clone $base)->where('status', 'START_TRIP')
+        );
+
+        $inProgressRequests = $latestFirst(
+            (clone $base)->where('status', 'IN_PROGRESS')
+        );
+
+        $completedRequests = $latestFirst(
+            (clone $base)->where('status', 'COMPLETED')
+        );
 
         $currentTrips = collect();
         $pastTrips = collect();
 
         if ($vehicleNo) {
-            $searched = (clone $base)
-                ->where('vehicle_no', 'LIKE', "%{$vehicleNo}%")
-                ->orderByDesc('assigned_start_at')
-                ->get()
-                ->map($format);
+            $searched = $latestFirst(
+                (clone $base)->where('vehicle_no', 'LIKE', "%{$vehicleNo}%")
+            );
 
             $currentTrips = $searched
                 ->filter(fn ($x) => $x['start_date'] && Carbon::parse($x['start_date'])->gte($today))

@@ -41,10 +41,10 @@ const MODULE_SETS = {
       image: "/images/vehicle-request-management.webp",
     },
     {
-      title: "Recruitment",
-      description: "Applicants, vacancies, and hiring pipeline.",
-      href: "/hrms/recruitment-dashboard",
-      image: "/images/hrms-recruitment.webp",
+      title: "Event & Meeting Managment",
+      description: "Manage events, meetings, schedules, and coordination in one place.",
+      href: "/hrms/meeting-dashboard",
+      image: "/images/hrms-meeting.webp",
     },
     {
       title: "Training",
