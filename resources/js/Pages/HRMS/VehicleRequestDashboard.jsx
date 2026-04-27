@@ -487,7 +487,7 @@ export default function VehicleRequestDashboard({
                   <TableCell sx={{ fontWeight: 900 }}>Employee / Chauffer</TableCell>
                   <TableCell sx={{ fontWeight: 900 }}>Type</TableCell>
                   <TableCell sx={{ fontWeight: 900 }}>Date</TableCell>
-                  <TableCell sx={{ fontWeight: 900 }}>Passengers</TableCell>
+                  <TableCell sx={{ fontWeight: 900 }}>Attempts</TableCell>
                   <TableCell sx={{ fontWeight: 900 }}>Status</TableCell>
                   <TableCell align="right" sx={{ fontWeight: 900 }}>
                     Action
@@ -532,7 +532,7 @@ export default function VehicleRequestDashboard({
                         </TableCell>
 
                         <TableCell sx={{ color: "#374151" }}>
-                          {r.passenger_count ?? "—"}
+                          {r.attempts_count ?? "—"}
                         </TableCell>
 
                         <TableCell>

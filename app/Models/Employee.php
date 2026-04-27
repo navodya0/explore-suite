@@ -95,4 +95,15 @@ class Employee extends Model
         return $this->hasOne(User::class, 'employee_id', 'employee_id');
     }
 
+    public function meetings()
+    {
+        return $this->belongsToMany(Meeting::class, 'meeting_members', 'employee_id', 'meeting_id')
+            ->withPivot('response_status')
+            ->withTimestamps();
+    }
+
+    public function jobTitle()
+    {
+        return $this->belongsTo(JobTitle::class, 'job_title_id', 'job_title_id');
+    }
 }

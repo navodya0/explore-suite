@@ -11,6 +11,7 @@ use App\Http\Controllers\VehicleRequestController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\MeetingController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -50,17 +51,21 @@ Route::get('/emp-dashboard', function () {
     return Inertia::render('HRMS/EmpDashboard');
 })->name('emp-dashboard');
 
+Route::get('/meetings', [MeetingController::class, 'index'])->name('meetings.index');
+Route::post('/meetings', [MeetingController::class, 'store'])->name('meetings.store');
+
 Route::get('/leave-dashboard', [LeaveRequestController::class, 'dashboard'])->name('leave-dashboard');
 
 Route::get('/vehicle-request-dashboard', [VehicleRequestController::class, 'dashboard'])->name('vehicle-request-dashboard');
+
+// Route::get('/hrms/meeting-dashboard', [MeetingController::class, 'dashboard'])->name('hrms.meeting-dashboard');
 
 Route::get('/payroll-dashboard', function () {
     return Inertia::render('HRMS/PayrollDashboard');
 })->name('payroll-dashboard');
 
-Route::get('/recruitment-dashboard', function () {
-    return Inertia::render('HRMS/RecruitmentDashboard');
-})->name('recruitment-dashboard');
+Route::get('/meeting-dashboard', [MeetingController::class, 'dashboard'])
+    ->name('meeting-dashboard');
 
 Route::get('/training-dashboard', function () {
     return Inertia::render('HRMS/TrainingDashboard');
@@ -86,5 +91,11 @@ Route::prefix('hrms')->name('hrms.')->middleware(['auth'])->group(function () {
     Route::resource('permissions', PermissionController::class);
     Route::get('leave-balances/{employeeId}', [LeaveRequestController::class, 'getEmployeeLeaveBalances'])->name('leave-balances.show');
 });
+
+Route::put('/hrms/meetings/{meeting}', [MeetingController::class, 'update'])
+    ->name('hrms.meetings.update');
+
+Route::patch('/hrms/meetings/{meeting}/cancel', [MeetingController::class, 'cancel'])
+    ->name('hrms.meetings.cancel');
 
 require __DIR__.'/auth.php';
