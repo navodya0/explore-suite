@@ -315,10 +315,19 @@ function MeetingsTable({ rows = [], onOpenDetails, onEdit, onCancel }) {
       headerName: "Actions",
       sortable: false,
       filterable: false,
-      flex: 1.5,
+      flex: 1,
       minWidth: 270,
       renderCell: (params) => (
-        <Stack direction="row" spacing={1}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+            width: "100%",
+            height: "100%",
+            overflow: "visible",
+          }}
+        >
           <Button
             variant="outlined"
             size="small"
@@ -347,9 +356,9 @@ function MeetingsTable({ rows = [], onOpenDetails, onEdit, onCancel }) {
               </Button>
             </>
           )}
-        </Stack>
+        </Box>
       ),
-    },
+    }
   ];
 
   return (
