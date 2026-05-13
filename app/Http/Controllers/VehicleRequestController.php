@@ -89,12 +89,17 @@ class VehicleRequestController extends Controller
                 $type = strtolower($ts->type ?? 'unknown');
                 $key = $employeeId . '|' . $type;
 
-                $counters[$key] = ($counters[$key] ?? 0) + 1;
+                if (in_array($ts->status, ['APPROVED', 'COMPLETED'])) {
+                    $counters[$key] = ($counters[$key] ?? 0) + 1;
+                    $attemptNo = $counters[$key];
+                } else {
+                    $attemptNo = null;
+                }
 
-                return $format($ts, $counters[$key]);
+                return $format($ts, $attemptNo);
             })->values();
         };
-
+        
         $latestFirst = function ($query) use ($mapWithRunningAttempt) {
             $records = $query
                 ->orderBy('assigned_start_at', 'asc')
