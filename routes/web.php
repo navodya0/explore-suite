@@ -98,4 +98,8 @@ Route::put('/hrms/meetings/{meeting}', [MeetingController::class, 'update'])
 Route::patch('/hrms/meetings/{meeting}/cancel', [MeetingController::class, 'cancel'])
     ->name('hrms.meetings.cancel');
 
+    Route::get('/hrms/customer-handling', function () {
+    return Inertia::render('HRMS/CustomerHandling');
+});
+
 require __DIR__.'/auth.php';

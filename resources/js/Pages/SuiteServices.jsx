@@ -41,6 +41,12 @@ const MODULE_SETS = {
       image: "/images/vehicle-request-management.webp",
     },
     {
+      title: "Customer Handling",
+      description: "Manage and track customer handling requests.",
+      href: "/hrms/customer-handling",
+      image: "/images/footer-logo.png",
+    },
+    {
       title: "Event & Meeting Managment",
       description: "Manage events, meetings, schedules, and coordination in one place.",
       href: "/hrms/meeting-dashboard",
